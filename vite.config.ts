@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/ALHAL.TECH/',
   plugins: [react()],
   resolve: {
     alias: {
