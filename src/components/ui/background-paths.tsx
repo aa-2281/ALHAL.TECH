@@ -42,8 +42,8 @@ function FloatingPaths({ position }: { position: number }) {
                 ))}
                 <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#f97316" />
+                        <stop offset="0%" stopColor="#2eb8c6" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#1a8a96" stopOpacity="0.2" />
                     </linearGradient>
                 </defs>
             </svg>

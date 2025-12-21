@@ -3,15 +3,30 @@
 @tailwind utilities;
 
 body {
-  background: linear-gradient(135deg, #0a1414 0%, #0f1f1f 100%);
-  color: #ecfdf5;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #053655 0%, #074771 100%);
+  color: #DAF6F5;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
 }
 
 .glass-panel {
-  background: rgba(15, 31, 31, 0.5);
+  background: rgba(7, 71, 113, 0.5);
   backdrop-filter: blur(20px);
+}
+
+/* Custom Cursor Logic */
+@media (min-width: 768px) {
+  body {
+    cursor: none;
+  }
+}
+
+body.hovering .custom-cursor-outline {
+  width: 60px;
+  height: 60px;
+  background-color: rgba(119, 222, 238, 0.1);
+  border-color: #77DEEE;
+  mix-blend-mode: screen;
 }
 
 /* Animations */

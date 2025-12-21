@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { cn } from "@/lib/utils"
-import { PixelTrail } from "@/components/ui/pixel-trail"
-import { BackgroundPaths } from "@/components/ui/background-paths"
+import { CanvasBackground } from "@/components/ui/canvas-background"
+import { CustomCursor } from "@/components/ui/custom-cursor"
 import { ServicesCarousel } from "@/components/services-carousel"
-import { useScreenSize } from "@/components/hooks/use-screen-size"
 import { LucideMenu, LucideX, LucideChevronRight, LucideCheck, LucideMail, LucidePhone, LucideSend, LucideGlobe, LucideZap, LucideShield } from "lucide-react"
 
 // --- DATA ---
@@ -20,7 +19,7 @@ const whyUsData = [
 
 const translations = {
   en: {
-    logoPart1: "ALHAL", logoPart2: ".TECH",
+    logoPart1: "ALHAL", logoPart2: "TECH",
     navServices: "Services", navWhy: "Why Us", navPortfolio: "Portfolio", navContact: "Let's Talk",
     heroBadge: "Accepting New Projects",
     heroTitlePart1: "Smart Solutions,", heroTitlePart2: "Real Results",
@@ -56,7 +55,7 @@ const translations = {
     svc5Title: "Custom Software Dev", svc5Desc: "Tailor-made software solutions to address your unique business challenges and workflows."
   },
   ar: {
-    logoPart1: "ALHAL", logoPart2: ".TECH",
+    logoPart1: "ALHAL", logoPart2: "TECH",
     navServices: "خدماتنا", navWhy: "لماذا نحن", navPortfolio: "أعمالنا", navContact: "تواصل معنا",
     heroBadge: "نستقبل مشاريع جديدة",
     heroTitlePart1: "حلول ذكية،", heroTitlePart2: "نتائج حقيقية",
@@ -122,7 +121,6 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
-  const screenSize = useScreenSize();
   const t = translations[lang];
   const lastScrollY = useRef(0);
 
@@ -155,15 +153,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      {/* Background PixelTrail */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <PixelTrail
-          pixelSize={screenSize.lessThan('md') ? 48 : 80}
-          fadeDuration={0}
-          delay={1200}
-          pixelClassName="rounded-full bg-brand-cyan/5"
-        />
-      </div>
+      {/* Custom Cursor & Canvas Background */}
+      <CustomCursor />
+      <CanvasBackground />
 
       <div className="relative z-10">
         {/* Header - hides on scroll down, shows on scroll up */}
@@ -171,14 +163,14 @@ export default function App() {
           id="main-header"
           className={cn(
             "fixed top-0 w-full z-50 transition-all duration-300 ease-in-out",
-            "backdrop-blur-xl bg-brand-dark/60",
+            "backdrop-blur-md bg-transparent",
             scrolled ? "py-3" : "py-4 sm:py-6",
             navVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
           )}
         >
           <div className="container max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between">
-              <a href="#" dir="ltr" className="flex items-center gap-1"><span className="font-extrabold text-2xl text-white">{t.logoPart1}</span><span className="font-extrabold text-2xl text-brand-red">{t.logoPart2}</span></a>
+              <a href="#" dir="ltr" className="flex flex-col leading-none"><span className="font-extrabold text-2xl text-white tracking-tight">{t.logoPart1}</span><span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span></a>
               <nav className="hidden lg:flex items-center gap-10 text-sm font-medium">
                 <a href="#services" className="text-gray-300 hover:text-white transition-colors">{t.navServices}</a>
                 <a href="#why-us" className="text-gray-300 hover:text-white transition-colors">{t.navWhy}</a>
@@ -199,7 +191,7 @@ export default function App() {
         {/* Mobile Menu */}
         <div className={cn("fixed top-0 right-0 w-full h-screen bg-brand-dark z-[60] lg:hidden transition-transform duration-300", mobileMenuOpen ? "translate-x-0" : "translate-x-full")}>
           <div className="flex flex-col h-full">
-            <div className="flex justify-between items-center p-6 border-b border-white/5"><span dir="ltr" className="font-extrabold text-xl text-white">{t.logoPart1}<span className="text-brand-red">{t.logoPart2}</span></span><button onClick={() => setMobileMenuOpen(false)} className="text-white p-2"><LucideX className="w-6 h-6" /></button></div>
+            <div className="flex justify-between items-center p-6 border-b border-white/5"><a href="#" dir="ltr" className="flex flex-col leading-none"><span className="font-extrabold text-xl text-white tracking-tight">{t.logoPart1}</span><span className="font-bold text-xs text-brand-cyan tracking-widest">{t.logoPart2}</span></a><button onClick={() => setMobileMenuOpen(false)} className="text-white p-2"><LucideX className="w-6 h-6" /></button></div>
             <nav className="flex flex-col gap-6 p-8 text-lg">
               <a href="#services" onClick={() => setMobileMenuOpen(false)} className="text-gray-300 hover:text-white">{t.navServices}</a>
               <a href="#why-us" onClick={() => setMobileMenuOpen(false)} className="text-gray-300 hover:text-white">{t.navWhy}</a>
@@ -210,10 +202,7 @@ export default function App() {
         </div>
 
         <main className="pt-0">
-          {/* Hero Section with BackgroundPaths */}
-          <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-brand-dark">
-            {/* BackgroundPaths animated background */}
-            <BackgroundPaths />
+          <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
 
             <div className="container max-w-7xl mx-auto px-4 relative z-10 pt-32">
               <div className="text-center max-w-4xl mx-auto">
@@ -251,21 +240,15 @@ export default function App() {
             >
               <path
                 d="M0,80 L0,0 Q720,80 1440,0 L1440,80 Z"
-                fill="#ecfdf5"
+                fill="#DAF6F5"
               />
             </svg>
           </div>
 
           {/* Value Proposition Section */}
-          <section className="py-24 bg-[#ecfdf5] relative overflow-hidden -mt-px">
-            {/* PixelTrail Hover Effect Background */}
+          <section className="py-24 bg-brand-light relative overflow-hidden -mt-px">
+            {/* PixelTrail Hover Effect Background - REMOVED */}
             <div className="absolute inset-0 z-0">
-              <PixelTrail
-                pixelSize={60}
-                fadeDuration={800}
-                delay={0}
-                pixelClassName="rounded-full bg-brand-cyan/30"
-              />
             </div>
 
             <div className="container max-w-7xl mx-auto px-4 relative z-10">
@@ -366,7 +349,7 @@ export default function App() {
               services={[
                 { id: 1, title: t.svc1Title, description: t.svc1Desc, gradient: "from-emerald-500 to-emerald-700", image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=800" },
                 { id: 2, title: t.svc2Title, description: t.svc2Desc, gradient: "from-blue-500 to-blue-700", image: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&q=80&w=800" },
-                { id: 3, title: t.svc3Title, description: t.svc3Desc, gradient: "from-red-500 to-red-700", image: "/3ace2f117c84b64ca350b762911877dd.jpg" },
+                { id: 3, title: t.svc3Title, description: t.svc3Desc, gradient: "from-red-500 to-red-700", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" },
                 { id: 4, title: t.svc4Title, description: t.svc4Desc, gradient: "from-purple-500 to-purple-700", image: "/istock-962219860-2-scaled.jpg" },
                 { id: 5, title: t.svc5Title, description: t.svc5Desc, gradient: "from-pink-500 to-pink-700", image: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?auto=format&fit=crop&q=80&w=800" }
               ]}
@@ -461,11 +444,11 @@ export default function App() {
           </section>
         </main>
 
-        <footer className="bg-[#ecfdf5] border-t border-brand-dark/10 pt-16 pb-8 text-sm">
+        <footer className="bg-brand-light border-t border-brand-dark/10 pt-16 pb-8 text-sm">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
               <div className="space-y-4">
-                <a href="#" dir="ltr" className="inline-flex items-center gap-1"><span className="font-extrabold text-2xl text-brand-dark">{t.logoPart1}</span><span className="font-extrabold text-2xl text-brand-red">{t.logoPart2}</span></a>
+                <a href="#" dir="ltr" className="flex flex-col leading-none"><span className="font-extrabold text-2xl text-brand-dark tracking-tight">{t.logoPart1}</span><span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span></a>
                 <p className="text-gray-600">{t.footerDesc}</p>
               </div>
               <div><h3 className="font-bold text-brand-dark mb-6 text-lg">{t.footerServices}</h3><ul className="space-y-3"><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerWebDev}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerMobile}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerAutomation}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerAI}</a></li></ul></div>

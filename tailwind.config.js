@@ -6,13 +6,16 @@ export default {
 		"./src/**/*.{js,ts,jsx,tsx}",
 	],
 	theme: {
+		fontFamily: {
+			sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+		},
 		extend: {
 			colors: {
-				'brand-dark': '#0a1414',
-				'brand-navy': '#0f1f1f',
-				'brand-cyan': '#10b981',
-				'brand-red': '#f97316',
-				'brand-light': '#ecfdf5',
+				'brand-dark': '#074771',
+				'brand-navy': '#053655', // slightly darker version for contrast
+				'brand-cyan': '#77DEEE',
+				'brand-red': '#BB0A21',
+				'brand-light': '#DAF6F5',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {
