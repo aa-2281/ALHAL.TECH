@@ -62,7 +62,7 @@ export function ServicesCarousel({ translations, services }: ServicesCarouselPro
             <div className="container max-w-7xl mx-auto px-4 mb-12 flex flex-col md:flex-row items-end md:items-center justify-between gap-6">
                 <div className="max-w-2xl">
                     <span className="text-brand-cyan font-semibold text-sm uppercase tracking-wider mb-2 block">{translations.label}</span>
-                    <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+                    <h2 className="text-4xl md:text-5xl font-bold text-black leading-tight">
                         {translations.title1}<br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-brand-red">{translations.title2}</span>
                     </h2>
@@ -72,14 +72,16 @@ export function ServicesCarousel({ translations, services }: ServicesCarouselPro
                     <button
                         onClick={() => scroll("left")}
                         disabled={!canScrollLeft}
-                        className={`p-3 rounded-full border border-white/10 transition-all ${canScrollLeft ? "bg-white/5 hover:bg-white/10 text-white" : "opacity-30 cursor-not-allowed text-gray-500"}`}
+                        aria-label="Scroll services left"
+                        className={`p-3 rounded-full border border-black/10 transition-all ${canScrollLeft ? "bg-black/5 hover:bg-black/10 text-black" : "opacity-30 cursor-not-allowed text-gray-400"}`}
                     >
                         <LucideChevronLeft className="w-6 h-6" />
                     </button>
                     <button
                         onClick={() => scroll("right")}
                         disabled={!canScrollRight}
-                        className={`p-3 rounded-full border border-white/10 transition-all ${canScrollRight ? "bg-white/5 hover:bg-white/10 text-white" : "opacity-30 cursor-not-allowed text-gray-500"}`}
+                        aria-label="Scroll services right"
+                        className={`p-3 rounded-full border border-black/10 transition-all ${canScrollRight ? "bg-black/5 hover:bg-black/10 text-black" : "opacity-30 cursor-not-allowed text-gray-400"}`}
                     >
                         <LucideChevronRight className="w-6 h-6" />
                     </button>
@@ -128,8 +130,8 @@ export function ServicesCarousel({ translations, services }: ServicesCarouselPro
 
                         {/* Content BELOW Visual */}
                         <div className="px-2">
-                            <h4 className="text-xl font-semibold text-white mb-3 group-hover:text-brand-cyan transition-colors">{service.title}</h4>
-                            <p className="text-gray-400 leading-relaxed text-sm md:text-base">
+                            <h4 className="text-xl font-semibold text-black mb-3 group-hover:text-brand-cyan transition-colors">{service.title}</h4>
+                            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
                                 {service.description}
                             </p>
                         </div>

@@ -11,11 +11,11 @@ export default {
 		},
 		extend: {
 			colors: {
-				'brand-dark': '#074771',
-				'brand-navy': '#053655', // slightly darker version for contrast
-				'brand-cyan': '#77DEEE',
-				'brand-red': '#BB0A21',
-				'brand-light': '#DAF6F5',
+				'brand-dark': '#000000', // Text/Headings -> Black
+				'brand-navy': '#f5f5f5', // Cards/Sections -> Light Gray
+				'brand-cyan': '#000000', // Accent -> Black
+				'brand-red': '#000000',  // Secondary Accent -> Black
+				'brand-light': '#ffffff', // Backgrounds -> White
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {

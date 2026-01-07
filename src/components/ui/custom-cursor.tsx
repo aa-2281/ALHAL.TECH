@@ -71,7 +71,7 @@ export const CustomCursor = () => {
             />
             <div
                 ref={cursorOutlineRef}
-                className="fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border border-brand-red/50 rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline"
+                className="fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border border-black/50 rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline"
             />
         </>
     );

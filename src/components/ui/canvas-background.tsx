@@ -48,7 +48,7 @@ export const CanvasBackground = () => {
                 if (!ctx) return;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = '#77DEEE'; // Brand Cyan
+                ctx.fillStyle = '#000000'; // Black particles
                 ctx.fill();
             }
         }
@@ -77,10 +77,15 @@ export const CanvasBackground = () => {
                 // Connect to mouse
                 const dx = mouse.x - p.x;
                 const dy = mouse.y - p.y;
+                // --- CONFIGURATION: Adjust these values to change opacity ---
+                const MOUSE_CONNECTION_OPACITY = 0.8; // Lines connecting to mouse
+                const PARTICLE_CONNECTION_OPACITY = 0.2; // Lines connecting particles
+                // ------------------------------------------------------------
+
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance < 200) {
                     ctx.beginPath();
-                    ctx.strokeStyle = `rgba(119, 222, 238, ${0.5 * (1 - distance / 200)})`; // Brand Cyan (#77DEEE) with opacity
+                    ctx.strokeStyle = `rgba(0, 0, 0, ${MOUSE_CONNECTION_OPACITY * (1 - distance / 200)})`;
                     ctx.lineWidth = 0.5;
                     ctx.moveTo(p.x, p.y);
                     ctx.lineTo(mouse.x, mouse.y);
@@ -95,7 +100,7 @@ export const CanvasBackground = () => {
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < 100) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(7, 71, 113, ${0.3 * (1 - dist / 100)})`; // Brand Navy (#074771) with opacity
+                        ctx.strokeStyle = `rgba(0, 0, 0, ${PARTICLE_CONNECTION_OPACITY * (1 - dist / 100)})`;
                         ctx.lineWidth = 0.2;
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);

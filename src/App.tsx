@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils"
 import { CanvasBackground } from "@/components/ui/canvas-background"
 import { CustomCursor } from "@/components/ui/custom-cursor"
 import { ServicesCarousel } from "@/components/services-carousel"
-import { LucideMenu, LucideX, LucideChevronRight, LucideCheck, LucideMail, LucidePhone, LucideSend, LucideGlobe, LucideZap, LucideShield } from "lucide-react"
+import { LucideMenu, LucideX, LucideChevronRight, LucideCheck, LucideMail, LucidePhone, LucideSend, LucideGlobe, LucideZap, LucideShield, LucideMessageCircle } from "lucide-react"
+import Lenis from 'lenis'
 
 // --- DATA ---
 
@@ -119,7 +120,6 @@ function RevealOnScroll({ children, delay = 0, className = "" }: { children: Rea
 export default function App() {
   const [lang, setLang] = useState<Lang>('en');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [navVisible, setNavVisible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const t = translations[lang];
   const lastScrollY = useRef(0);
@@ -127,15 +127,6 @@ export default function App() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      // Determine scroll direction
-      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-        // Scrolling DOWN - hide navbar
-        setNavVisible(false);
-      } else {
-        // Scrolling UP - show navbar
-        setNavVisible(true);
-      }
 
       // Update scrolled state for styling
       setScrolled(currentScrollY > 50);
@@ -151,6 +142,29 @@ export default function App() {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    })
+
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+
+    requestAnimationFrame(raf)
+
+    return () => {
+      lenis.destroy()
+    }
+  }, []);
+
   return (
     <div className="relative min-h-screen">
       {/* Custom Cursor & Canvas Background */}
@@ -158,44 +172,73 @@ export default function App() {
       <CanvasBackground />
 
       <div className="relative z-10">
-        {/* Header - hides on scroll down, shows on scroll up */}
+        {/* Full Navbar - Visible at Top */}
         <header
           id="main-header"
           className={cn(
-            "fixed top-0 w-full z-50 transition-all duration-300 ease-in-out",
-            "backdrop-blur-md bg-transparent",
-            scrolled ? "py-3" : "py-4 sm:py-6",
-            navVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+            "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
+            scrolled ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"
           )}
         >
-          <div className="container max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between">
-              <a href="#" dir="ltr" className="flex flex-col leading-none"><span className="font-extrabold text-2xl text-white tracking-tight">{t.logoPart1}</span><span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span></a>
-              <nav className="hidden lg:flex items-center gap-10 text-sm font-medium">
-                <a href="#services" className="text-gray-300 hover:text-white transition-colors">{t.navServices}</a>
-                <a href="#why-us" className="text-gray-300 hover:text-white transition-colors">{t.navWhy}</a>
-                <a href="#portfolio" className="text-gray-300 hover:text-white transition-colors">{t.navPortfolio}</a>
-                <a href="#contact" className="bg-brand-red hover:bg-red-700 text-white px-6 py-2.5 rounded-full transition-all hover:scale-105">{t.navContact}</a>
-              </nav>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center bg-brand-navy/50 rounded-full p-1">
-                  <button onClick={() => setLang('en')} className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all", lang === 'en' ? "bg-white text-brand-navy" : "text-gray-300")}>EN</button>
-                  <button onClick={() => setLang('ar')} className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all", lang === 'ar' ? "bg-white text-brand-navy" : "text-gray-300")}>ع</button>
-                </div>
-                <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden text-white p-2"><LucideMenu className="w-6 h-6" /></button>
+          <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between">
+            {/* Logo */}
+            <a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none">
+              <span className="font-extrabold text-2xl text-brand-dark tracking-tight">{t.logoPart1}</span>
+              <span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span>
+            </a>
+
+            {/* Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">
+              <a href="#services" className="text-gray-600 hover:text-brand-dark transition-colors">{t.navServices}</a>
+              <a href="#why-us" className="text-gray-600 hover:text-brand-dark transition-colors">{t.navWhy}</a>
+              <a href="#portfolio" className="text-gray-600 hover:text-brand-dark transition-colors">{t.navPortfolio}</a>
+              <a href="#contact" className="bg-brand-red hover:bg-red-700 text-white px-6 py-2.5 rounded-full transition-all hover:scale-105">{t.navContact}</a>
+            </nav>
+
+            {/* Right Side Controls */}
+            <div className="flex items-center gap-4">
+              {/* Language Toggle */}
+              <div className="flex items-center bg-black/10 rounded-full p-1">
+                <button onClick={() => setLang('en')} aria-label="Switch to English" className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all", lang === 'en' ? "bg-white text-black" : "text-gray-600")}>
+                  EN
+                </button>
+                <button onClick={() => setLang('ar')} aria-label="Switch to Arabic" className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all", lang === 'ar' ? "bg-white text-black" : "text-gray-600")}>
+                  ع
+                </button>
               </div>
+              {/* Mobile Menu Button */}
+              <button onClick={() => setMobileMenuOpen(true)} aria-label="Open mobile menu" className="lg:hidden text-brand-dark p-2"><LucideMenu className="w-6 h-6" /></button>
             </div>
           </div>
         </header>
 
+        {/* Sticky Side CTA Button - Visible on Scroll */}
+        <a
+          href="#contact"
+          aria-label="Contact us - Let's talk about your project"
+          className={cn(
+            "fixed z-50 transition-all duration-500 ease-in-out",
+            // Position: bottom corner with side offset
+            lang === 'ar' ? "left-6 bottom-8" : "right-6 bottom-8",
+            // Styling: Pill shape, Horizontal text
+            "text-white px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:brightness-110",
+            // Visibility based on scroll
+            scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+          )}
+          style={{ backgroundColor: '#a92e26' }}
+        >
+          <LucideMessageCircle className="w-5 h-5" />
+          {t.navContact}
+        </a>
+
         {/* Mobile Menu */}
-        <div className={cn("fixed top-0 right-0 w-full h-screen bg-brand-dark z-[60] lg:hidden transition-transform duration-300", mobileMenuOpen ? "translate-x-0" : "translate-x-full")}>
+        <div className={cn("fixed top-0 right-0 w-full h-screen bg-white z-[60] lg:hidden transition-transform duration-300", mobileMenuOpen ? "translate-x-0" : "translate-x-full")}>
           <div className="flex flex-col h-full">
-            <div className="flex justify-between items-center p-6 border-b border-white/5"><a href="#" dir="ltr" className="flex flex-col leading-none"><span className="font-extrabold text-xl text-white tracking-tight">{t.logoPart1}</span><span className="font-bold text-xs text-brand-cyan tracking-widest">{t.logoPart2}</span></a><button onClick={() => setMobileMenuOpen(false)} className="text-white p-2"><LucideX className="w-6 h-6" /></button></div>
+            <div className="flex justify-between items-center p-6 border-b border-black/5"><a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none"><span className="font-extrabold text-xl text-brand-dark tracking-tight">{t.logoPart1}</span><span className="font-bold text-xs text-brand-cyan tracking-widest">{t.logoPart2}</span></a><button onClick={() => setMobileMenuOpen(false)} aria-label="Close mobile menu" className="text-brand-dark p-2"><LucideX className="w-6 h-6" /></button></div>
             <nav className="flex flex-col gap-6 p-8 text-lg">
-              <a href="#services" onClick={() => setMobileMenuOpen(false)} className="text-gray-300 hover:text-white">{t.navServices}</a>
-              <a href="#why-us" onClick={() => setMobileMenuOpen(false)} className="text-gray-300 hover:text-white">{t.navWhy}</a>
-              <a href="#portfolio" onClick={() => setMobileMenuOpen(false)} className="text-gray-300 hover:text-white">{t.navPortfolio}</a>
+              <a href="#services" onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-brand-dark">{t.navServices}</a>
+              <a href="#why-us" onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-brand-dark">{t.navWhy}</a>
+              <a href="#portfolio" onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-brand-dark">{t.navPortfolio}</a>
               <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="bg-brand-red text-white px-6 py-3 rounded-full text-center">{t.navContact}</a>
             </nav>
           </div>
@@ -212,25 +255,25 @@ export default function App() {
                 </RevealOnScroll>
                 <RevealOnScroll delay={100}>
                   <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6">
-                    <span className="text-white">{t.heroTitlePart1}</span><br />
+                    <span className="text-brand-dark">{t.heroTitlePart1}</span><br />
                     <span className="bg-gradient-to-r from-brand-cyan to-brand-red bg-clip-text text-transparent">{t.heroTitlePart2}</span>
                   </h1>
                 </RevealOnScroll>
                 <RevealOnScroll delay={200}>
-                  <p className="text-gray-400 text-lg sm:text-xl mb-10 max-w-2xl mx-auto">{t.heroSubtitle}</p>
+                  <p className="text-gray-600 text-lg sm:text-xl mb-10 max-w-2xl mx-auto">{t.heroSubtitle}</p>
                 </RevealOnScroll>
                 <RevealOnScroll delay={300} className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a href="#contact" className="bg-brand-red hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">
                     {t.heroCTA} <LucideChevronRight className="w-5 h-5 rtl:rotate-180" />
                   </a>
-                  <a href="#services" className="border border-brand-cyan text-brand-cyan hover:bg-brand-cyan hover:text-brand-dark px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">{t.heroSecondCTA}</a>
+                  <a href="#services" className="border border-brand-cyan text-brand-cyan hover:bg-brand-cyan hover:text-white px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">{t.heroSecondCTA}</a>
                 </RevealOnScroll>
               </div>
             </div>
           </section>
 
           {/* Curved Arc Divider */}
-          <div className="relative bg-brand-dark -mb-px">
+          <div className="relative -mb-px">
             <svg
               viewBox="0 0 1440 80"
               fill="none"
@@ -240,13 +283,13 @@ export default function App() {
             >
               <path
                 d="M0,80 L0,0 Q720,80 1440,0 L1440,80 Z"
-                fill="#DAF6F5"
+                fill="#000000"
               />
             </svg>
           </div>
 
           {/* Value Proposition Section */}
-          <section className="py-24 bg-brand-light relative overflow-hidden -mt-px">
+          <section className="py-24 bg-brand-dark relative overflow-hidden -mt-px">
             {/* PixelTrail Hover Effect Background - REMOVED */}
             <div className="absolute inset-0 z-0">
             </div>
@@ -254,12 +297,12 @@ export default function App() {
             <div className="container max-w-7xl mx-auto px-4 relative z-10">
               <div className="text-center max-w-3xl mx-auto mb-16">
                 <RevealOnScroll>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-6 text-brand-dark">
-                    {t.sec2Title1} <span className="text-brand-cyan">{t.sec2Title2}</span>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+                    {t.sec2Title1} <span className="text-gray-400">{t.sec2Title2}</span>
                   </h2>
                 </RevealOnScroll>
                 <RevealOnScroll delay={100}>
-                  <p className="text-xl text-gray-600 leading-relaxed">
+                  <p className="text-xl text-gray-400 leading-relaxed">
                     {t.sec2Subtitle}
                   </p>
                 </RevealOnScroll>
@@ -276,24 +319,24 @@ export default function App() {
                 </RevealOnScroll>
                 <RevealOnScroll delay={200} className="order-1 lg:order-2">
                   <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 bg-brand-cyan/10 text-brand-cyan px-4 py-2 rounded-full text-sm font-semibold">
+                    <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-semibold">
                       <LucideZap className="w-4 h-4" /> {t.sec2Badge1}
                     </div>
-                    <h3 className="text-3xl lg:text-4xl font-bold text-brand-dark">
+                    <h3 className="text-3xl lg:text-4xl font-bold text-white">
                       {t.sec2Heading1}
                     </h3>
-                    <p className="text-lg text-gray-600 leading-relaxed">
+                    <p className="text-lg text-gray-400 leading-relaxed">
                       {t.sec2Desc1}
                     </p>
                     <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-gray-700">
-                        <LucideCheck className="w-5 h-5 text-brand-cyan" /> {t.sec2Check1a}
+                      <li className="flex items-center gap-3 text-gray-300">
+                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check1a}
                       </li>
-                      <li className="flex items-center gap-3 text-gray-700">
-                        <LucideCheck className="w-5 h-5 text-brand-cyan" /> {t.sec2Check1b}
+                      <li className="flex items-center gap-3 text-gray-300">
+                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check1b}
                       </li>
-                      <li className="flex items-center gap-3 text-gray-700">
-                        <LucideCheck className="w-5 h-5 text-brand-cyan" /> {t.sec2Check1c}
+                      <li className="flex items-center gap-3 text-gray-300">
+                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check1c}
                       </li>
                     </ul>
                   </div>
@@ -304,24 +347,24 @@ export default function App() {
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                 <RevealOnScroll delay={100}>
                   <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 bg-brand-red/10 text-brand-red px-4 py-2 rounded-full text-sm font-semibold">
+                    <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-semibold">
                       <LucideShield className="w-4 h-4" /> {t.sec2Badge2}
                     </div>
-                    <h3 className="text-3xl lg:text-4xl font-bold text-brand-dark">
+                    <h3 className="text-3xl lg:text-4xl font-bold text-white">
                       {t.sec2Heading2}
                     </h3>
-                    <p className="text-lg text-gray-600 leading-relaxed">
+                    <p className="text-lg text-gray-400 leading-relaxed">
                       {t.sec2Desc2}
                     </p>
                     <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-gray-700">
-                        <LucideCheck className="w-5 h-5 text-brand-red" /> {t.sec2Check2a}
+                      <li className="flex items-center gap-3 text-gray-300">
+                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check2a}
                       </li>
-                      <li className="flex items-center gap-3 text-gray-700">
-                        <LucideCheck className="w-5 h-5 text-brand-red" /> {t.sec2Check2b}
+                      <li className="flex items-center gap-3 text-gray-300">
+                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check2b}
                       </li>
-                      <li className="flex items-center gap-3 text-gray-700">
-                        <LucideCheck className="w-5 h-5 text-brand-red" /> {t.sec2Check2c}
+                      <li className="flex items-center gap-3 text-gray-300">
+                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check2c}
                       </li>
                     </ul>
                   </div>
@@ -347,11 +390,11 @@ export default function App() {
                 solutions: ""
               }}
               services={[
-                { id: 1, title: t.svc1Title, description: t.svc1Desc, gradient: "from-emerald-500 to-emerald-700", image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=800" },
-                { id: 2, title: t.svc2Title, description: t.svc2Desc, gradient: "from-blue-500 to-blue-700", image: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&q=80&w=800" },
-                { id: 3, title: t.svc3Title, description: t.svc3Desc, gradient: "from-red-500 to-red-700", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" },
-                { id: 4, title: t.svc4Title, description: t.svc4Desc, gradient: "from-purple-500 to-purple-700", image: "/istock-962219860-2-scaled.jpg" },
-                { id: 5, title: t.svc5Title, description: t.svc5Desc, gradient: "from-pink-500 to-pink-700", image: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?auto=format&fit=crop&q=80&w=800" }
+                { id: 1, title: t.svc1Title, description: t.svc1Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=800" },
+                { id: 2, title: t.svc2Title, description: t.svc2Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&q=80&w=800" },
+                { id: 3, title: t.svc3Title, description: t.svc3Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" },
+                { id: 4, title: t.svc4Title, description: t.svc4Desc, gradient: "from-neutral-800 to-neutral-900", image: "/istock-962219860-2-scaled.jpg" },
+                { id: 5, title: t.svc5Title, description: t.svc5Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?auto=format&fit=crop&q=80&w=800" }
               ]}
             />
           </section>
@@ -361,16 +404,16 @@ export default function App() {
               <div className="max-w-3xl mx-auto text-center">
                 <RevealOnScroll>
                   <span className="text-brand-red font-semibold text-sm uppercase mb-3 block">{t.whyUsLabel}</span>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-12 text-white">{t.whyUsTitle}</h2>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-12 text-brand-dark">{t.whyUsTitle}</h2>
                 </RevealOnScroll>
                 <div className="grid md:grid-cols-2 gap-6 text-left">
                   {whyUsData.map((point, i) => (
                     <RevealOnScroll key={i} delay={i * 100}>
-                      <div className="flex items-center gap-4 group cursor-default glass-panel p-5 rounded-2xl border border-white/5 hover:border-brand-cyan/20 transition-all">
+                      <div className="flex items-center gap-4 group cursor-default glass-panel p-5 rounded-2xl border border-black/5 hover:border-brand-cyan/20 transition-all">
                         <div className="w-10 h-10 rounded-full bg-brand-red/10 flex items-center justify-center text-brand-red border border-brand-red/20 group-hover:bg-brand-red group-hover:text-white transition-all flex-shrink-0">
                           <LucideCheck className="w-5 h-5" />
                         </div>
-                        <span className="text-lg text-gray-300 group-hover:text-brand-light transition-colors font-medium">{point}</span>
+                        <span className="text-lg text-gray-700 group-hover:text-brand-red transition-colors font-medium">{point}</span>
                       </div>
                     </RevealOnScroll>
                   ))}
@@ -383,11 +426,11 @@ export default function App() {
 
           <section className="py-24">
             <div className="container max-w-7xl mx-auto px-4">
-              <RevealOnScroll className="glass-panel rounded-3xl p-12 sm:p-16 text-center border border-white/10 relative overflow-hidden">
+              <RevealOnScroll className="glass-panel rounded-3xl p-12 sm:p-16 text-center border border-black/10 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-red/10 via-transparent to-brand-cyan/10"></div>
                 <div className="relative z-10">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white">{t.finalCtaTitle}</h2>
-                  <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">{t.finalCtaSubtitle}</p>
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-brand-dark">{t.finalCtaTitle}</h2>
+                  <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">{t.finalCtaSubtitle}</p>
                   <a href="#contact" className="inline-flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold transition-all">
                     {t.finalCtaButton} <LucideChevronRight className="w-5 h-5 rtl:rotate-180" />
                   </a>
@@ -401,28 +444,28 @@ export default function App() {
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
                 <RevealOnScroll>
                   <span className="text-brand-cyan font-semibold text-sm uppercase mb-3 block">{t.contactLabel}</span>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-6 text-brand-light">{t.contactTitle}</h2>
-                  <p className="text-gray-400 text-lg mb-12">{t.contactSubtitle}</p>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6 text-brand-dark">{t.contactTitle}</h2>
+                  <p className="text-gray-600 text-lg mb-12">{t.contactSubtitle}</p>
                   <div className="space-y-8">
                     <div className="flex items-start gap-5 group rtl:flex-row-reverse rtl:text-right">
                       <div className="w-12 h-12 rounded-xl bg-brand-navy/50 flex items-center justify-center text-brand-red group-hover:scale-110 transition-transform border border-brand-light/5">
                         <LucideMail className="w-6 h-6" />
                       </div>
-                      <div><h3 className="text-xl font-bold text-brand-light mb-1">{t.contactEmailLabel}</h3><a href="mailto:yasir@alhaltech.com" className="text-gray-400 hover:text-brand-cyan transition-colors">yasir@alhaltech.com</a></div>
+                      <div><h3 className="text-xl font-bold text-brand-dark mb-1">{t.contactEmailLabel}</h3><a href="mailto:yasir@alhaltech.com" className="text-gray-600 hover:text-brand-cyan transition-colors">yasir@alhaltech.com</a></div>
                     </div>
                     <div className="flex items-start gap-5 group rtl:flex-row-reverse rtl:text-right">
                       <div className="w-12 h-12 rounded-xl bg-brand-navy/50 flex items-center justify-center text-brand-cyan group-hover:scale-110 transition-transform border border-brand-light/5">
                         <LucidePhone className="w-6 h-6" />
                       </div>
-                      <div><h3 className="text-xl font-bold text-brand-light mb-1">{t.contactPhoneLabel}</h3><a href="tel:+9647507834121" className="text-gray-400 hover:text-brand-cyan transition-colors" dir="ltr">+964 750 783 4121</a></div>
+                      <div><h3 className="text-xl font-bold text-brand-dark mb-1">{t.contactPhoneLabel}</h3><a href="tel:+9647507834121" className="text-gray-600 hover:text-brand-cyan transition-colors" dir="ltr">+964 750 783 4121</a></div>
                     </div>
                   </div>
                 </RevealOnScroll>
                 <RevealOnScroll delay={200}>
-                  <div className="glass-panel rounded-3xl p-8 sm:p-10 border border-white/10">
+                  <div className="glass-panel rounded-3xl p-8 sm:p-10 border border-black/10">
 
-                    <div className="space-y-2 mb-6"><label htmlFor="subject" className="text-sm font-medium text-gray-300 ml-1">{t.formSubject}</label><select id="contactSubject" className="w-full bg-brand-dark/50 border border-brand-light/10 rounded-xl px-4 py-3 text-brand-light focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all outline-none appearance-none"><option>{t.formOptWebDev}</option><option>{t.formOptMobile}</option><option>{t.formOptConsulting}</option><option>{t.formOptOther}</option></select></div>
-                    <div className="space-y-2 mb-8"><label htmlFor="message" className="text-sm font-medium text-gray-300 ml-1">{t.formMessage}</label><textarea id="contactMessage" rows={4} className="w-full bg-brand-dark/50 border border-brand-light/10 rounded-xl px-4 py-3 text-brand-light focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all outline-none resize-none" placeholder={lang === 'ar' ? "اكتب تفاصيل مشروعك هنا..." : "Tell us about your project..."}></textarea></div>
+                    <div className="space-y-2 mb-6"><label htmlFor="subject" className="text-sm font-medium text-gray-700 ml-1">{t.formSubject}</label><select id="contactSubject" className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-black focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all outline-none appearance-none"><option>{t.formOptWebDev}</option><option>{t.formOptMobile}</option><option>{t.formOptConsulting}</option><option>{t.formOptOther}</option></select></div>
+                    <div className="space-y-2 mb-8"><label htmlFor="message" className="text-sm font-medium text-gray-700 ml-1">{t.formMessage}</label><textarea id="contactMessage" rows={4} className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-black focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all outline-none resize-none" placeholder={lang === 'ar' ? "اكتب تفاصيل مشروعك هنا..." : "Tell us about your project..."}></textarea></div>
                     <button
                       type="button"
                       onClick={() => {
@@ -444,21 +487,21 @@ export default function App() {
           </section>
         </main>
 
-        <footer className="bg-brand-light border-t border-brand-dark/10 pt-16 pb-8 text-sm">
+        <footer className="bg-brand-dark border-t border-white/10 pt-16 pb-8 text-sm">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
               <div className="space-y-4">
-                <a href="#" dir="ltr" className="flex flex-col leading-none"><span className="font-extrabold text-2xl text-brand-dark tracking-tight">{t.logoPart1}</span><span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span></a>
-                <p className="text-gray-600">{t.footerDesc}</p>
+                <a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none"><span className="font-extrabold text-2xl text-white tracking-tight">{t.logoPart1}</span><span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span></a>
+                <p className="text-gray-500">{t.footerDesc}</p>
               </div>
-              <div><h3 className="font-bold text-brand-dark mb-6 text-lg">{t.footerServices}</h3><ul className="space-y-3"><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerWebDev}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerMobile}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerAutomation}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerAI}</a></li></ul></div>
-              <div><h3 className="font-bold text-brand-dark mb-6 text-lg">{t.footerCompany}</h3><ul className="space-y-3"><li><a href="#why-us" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerAbout}</a></li><li><a href="#services" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerServicesLink}</a></li><li><a href="#" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerCareers}</a></li><li><a href="#contact" className="text-gray-600 hover:text-brand-cyan transition-colors">{t.footerContact}</a></li></ul></div>
-              <div><h3 className="font-bold text-brand-dark mb-6 text-lg">{t.footerSocial}</h3><div className="flex gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-brand-dark/10 flex items-center justify-center text-brand-dark hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1"><LucideGlobe className="w-5 h-5" /></a>
-                <a href="#" className="w-10 h-10 rounded-full bg-brand-dark/10 flex items-center justify-center text-brand-dark hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1"><LucideMail className="w-5 h-5" /></a>
+              <div><h3 className="font-bold text-white mb-6 text-lg">{t.footerServices}</h3><ul className="space-y-3"><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerWebDev}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerMobile}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAutomation}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAI}</a></li></ul></div>
+              <div><h3 className="font-bold text-white mb-6 text-lg">{t.footerCompany}</h3><ul className="space-y-3"><li><a href="#why-us" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAbout}</a></li><li><a href="#services" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerServicesLink}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerCareers}</a></li><li><a href="#contact" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerContact}</a></li></ul></div>
+              <div><h3 className="font-bold text-white mb-6 text-lg">{t.footerSocial}</h3><div className="flex gap-4">
+                <a href="#" aria-label="Visit our website" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1"><LucideGlobe className="w-5 h-5" /></a>
+                <a href="mailto:yasir@alhaltech.com" aria-label="Send us an email" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1"><LucideMail className="w-5 h-5" /></a>
               </div></div>
             </div>
-            <div className="border-t border-brand-dark/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"><p className="text-gray-500">{t.footerCopyright}</p><div className="flex gap-6 text-gray-500"><a href="#" className="hover:text-brand-cyan transition-colors">{t.footerPrivacy}</a><a href="#" className="hover:text-brand-cyan transition-colors">{t.footerTerms}</a></div></div>
+            <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"><p className="text-gray-500">{t.footerCopyright}</p><div className="flex gap-6 text-gray-500"><a href="#" className="hover:text-brand-cyan transition-colors">{t.footerPrivacy}</a><a href="#" className="hover:text-brand-cyan transition-colors">{t.footerTerms}</a></div></div>
           </div>
         </footer>
       </div>
