@@ -11,6 +11,10 @@ import Footer from "@/components/Footer"
 import { AnimatedText } from "@/components/ui/animated-text"
 import { LucideSend } from "lucide-react"
 import Lenis from 'lenis'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 // SVG imports removed. Using absolute paths from public folder.
 
 
@@ -195,14 +199,18 @@ export default function App() {
       touchMultiplier: 2,
     })
 
-    function raf(time: number) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
+    // Integrate with GSAP ticker instead of separate RAF loop
+    // This eliminates one RAF loop and improves synchronization
+    const tickerCallback = (time: number) => {
+      lenis.raf(time * 1000)
     }
+    gsap.ticker.add(tickerCallback)
 
-    requestAnimationFrame(raf)
+    // Sync ScrollTrigger with Lenis scroll
+    lenis.on('scroll', ScrollTrigger.update)
 
     return () => {
+      gsap.ticker.remove(tickerCallback)
       lenis.destroy()
     }
   }, []);
@@ -263,6 +271,8 @@ export default function App() {
                   <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
                     <img
                       src="/3.svg"
+                      loading="lazy"
+                      decoding="async"
                       alt="Strategic Planning"
                       className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
                     />
@@ -277,6 +287,8 @@ export default function App() {
                   <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
                     <img
                       src="/4.svg"
+                      loading="lazy"
+                      decoding="async"
                       alt="AI Implementation"
                       className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
                     />
@@ -291,6 +303,8 @@ export default function App() {
                   <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
                     <img
                       src="/5.svg"
+                      loading="lazy"
+                      decoding="async"
                       alt="Growth Analytics"
                       className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
                     />

@@ -29,6 +29,8 @@
   z-index: 10;
   pointer-events: none;
   overflow: hidden;
+  --pixel-opacity: 1;
+  contain: layout style paint;
 }
 
 /* Text overlay on top of pixels - always visible */
@@ -48,6 +50,10 @@
   padding: 2rem;
   text-align: center;
   pointer-events: none;
+  --text-r: 232;
+  --text-g: 228;
+  --text-b: 223;
+  color: rgb(var(--text-r), var(--text-g), var(--text-b));
 }
 
 .pixel-overlay-title {
@@ -102,8 +108,8 @@
 .pixel {
   width: 100%;
   aspect-ratio: 1 / 1;
-  will-change: background-color, opacity;
-  transition: background-color 0.8s ease, opacity 0.3s ease;
+  opacity: var(--pixel-opacity, 1);
+  transition: background-color 0.8s ease;
   /* Transform is handled inline for overlap */
 }
 

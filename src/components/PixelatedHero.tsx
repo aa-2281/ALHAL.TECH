@@ -1,10 +1,5 @@
-import React, { useEffect, useRef, useMemo, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React, { useEffect, useRef, useMemo, useReducer, useCallback } from 'react';
 import './PixelatedHero.css';
-
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
 
 // Color palette from the reference (green/earthy tones)
 const colorPalette = [
@@ -36,6 +31,35 @@ interface PixelatedHeroProps {
   };
 }
 
+// Reducer for batched state updates
+interface HeroState {
+  currentPhase: number;
+  showBrand: boolean;
+  bgOpacity: number;
+}
+
+type HeroAction = {
+  type: 'UPDATE_ALL';
+  payload: HeroState;
+};
+
+const heroReducer = (state: HeroState, action: HeroAction): HeroState => {
+  switch (action.type) {
+    case 'UPDATE_ALL':
+      // Only update if values actually changed
+      if (
+        state.currentPhase === action.payload.currentPhase &&
+        state.showBrand === action.payload.showBrand &&
+        state.bgOpacity === action.payload.bgOpacity
+      ) {
+        return state;
+      }
+      return action.payload;
+    default:
+      return state;
+  }
+};
+
 const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
   // Title content for different scroll phases, now using translations
   const titlePhases = useMemo(() => [
@@ -47,11 +71,18 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
   const pixelLayerRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const textOverlayRef = useRef<HTMLDivElement>(null);
-  const [currentPhase, setCurrentPhase] = useState(0);
-  const [showBrand, setShowBrand] = useState(false);
-  const [bgOpacity, setBgOpacity] = useState(1);
+  const lastScrollYRef = useRef(0);
 
-  const getRandomColor = () => colorPalette[Math.floor(Math.random() * colorPalette.length)];
+  // Use reducer for batched state updates
+  const [state, dispatch] = useReducer(heroReducer, {
+    currentPhase: 0,
+    showBrand: false,
+    bgOpacity: 1
+  });
+
+  const { currentPhase, showBrand, bgOpacity } = state;
+
+  const getRandomColor = useCallback(() => colorPalette[Math.floor(Math.random() * colorPalette.length)], []);
 
   // Generate pixel grid - column-based structure with responsive sizing
   const pixelGrid = useMemo(() => {
@@ -80,7 +111,7 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
     if (!pixelLayer) return;
 
     const pixels = pixelLayer.querySelectorAll('.pixel');
-    let lastScrollY = window.scrollY;
+    let rafId: number;
     let ticking = false;
 
     const shuffleColors = () => {
@@ -96,62 +127,74 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
     };
 
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const viewportHeight = window.innerHeight;
-
-      // Phase 0: First screen with pixels (0 to 75vh)
-      // Phase 1: Second screen with "AI Automation Solutions" (75vh+)
-      // Brand Reveal: "ALHAL TECH" appears at 110vh
-      const newPhase = currentScrollY >= viewportHeight * 0.75 ? 1 : 0;
-      setCurrentPhase(newPhase);
-
-      const shouldShowBrand = currentScrollY >= viewportHeight * 1.1;
-      setShowBrand(shouldShowBrand);
-
-      // Pixels fade out when brand appears (starts at 1.1vh, completes by 2vh)
-      const fadeStart = viewportHeight * 1.1;
-      const fadeEnd = viewportHeight * 2;
-      let pixelOpacity = 1;
-      if (currentScrollY >= fadeStart) {
-        const fadeProgress = Math.min(1, (currentScrollY - fadeStart) / (fadeEnd - fadeStart));
-        pixelOpacity = 1 - fadeProgress;
+      // Cancel any pending RAF to prevent stacking
+      if (rafId) {
+        cancelAnimationFrame(rafId);
       }
 
-      // Apply opacity to all pixels
-      pixels.forEach((pixel) => {
-        const el = pixel as HTMLElement;
-        el.style.opacity = pixelOpacity.toString();
-      });
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const vh = window.innerHeight;
 
-      // Update text color based on pixel opacity (fade from white/off-white to black)
-      if (textOverlayRef.current) {
-        // Interpolate between #e8e4df (232, 228, 223) and black (0, 0, 0)
-        const r = Math.round(232 * pixelOpacity);
-        const g = Math.round(228 * pixelOpacity);
-        const b = Math.round(223 * pixelOpacity);
-        textOverlayRef.current.style.color = `rgb(${r}, ${g}, ${b})`;
-      }
+        // Calculate all values
+        const newPhase = scrollY >= vh * 0.75 ? 1 : 0;
+        const shouldShowBrand = scrollY >= vh * 1.1;
+        const scrollProgress = Math.min(1, scrollY / vh);
+        const shadowOpacity = Math.pow(1 - scrollProgress, 0.3);
 
-      // Fade out the background shadow with the pixels
-      const scrollProgress = Math.min(1, currentScrollY / viewportHeight);
-      const shadowOpacity = Math.pow(1 - scrollProgress, 0.3);
-      setBgOpacity(shadowOpacity);
+        // Batch all state updates into single dispatch
+        dispatch({
+          type: 'UPDATE_ALL',
+          payload: {
+            currentPhase: newPhase,
+            showBrand: shouldShowBrand,
+            bgOpacity: shadowOpacity
+          }
+        });
 
-      // Trigger color change every 75px of scroll for slower updates
-      if (Math.abs(currentScrollY - lastScrollY) > 50) {
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            shuffleColors();
-            lastScrollY = currentScrollY;
-            ticking = false;
-          });
-          ticking = true;
+        // Calculate pixel opacity
+        const fadeStart = vh * 1.1;
+        const fadeEnd = vh * 2;
+        let pixelOpacity = 1;
+        if (scrollY >= fadeStart) {
+          const fadeProgress = Math.min(1, (scrollY - fadeStart) / (fadeEnd - fadeStart));
+          pixelOpacity = 1 - fadeProgress;
         }
-      }
+
+        // Use CSS variable on container instead of updating each pixel
+        pixelLayer.style.setProperty('--pixel-opacity', pixelOpacity.toString());
+
+        // Update text color via CSS variables
+        if (textOverlayRef.current) {
+          const r = Math.round(232 * pixelOpacity);
+          const g = Math.round(228 * pixelOpacity);
+          const b = Math.round(223 * pixelOpacity);
+          textOverlayRef.current.style.setProperty('--text-r', r.toString());
+          textOverlayRef.current.style.setProperty('--text-g', g.toString());
+          textOverlayRef.current.style.setProperty('--text-b', b.toString());
+        }
+
+        // Trigger color change every 75px of scroll (increased threshold)
+        if (Math.abs(scrollY - lastScrollYRef.current) > 75) {
+          if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(() => {
+              shuffleColors();
+              lastScrollYRef.current = scrollY;
+              ticking = false;
+            });
+          }
+        }
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   return (
@@ -246,4 +289,6 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
   );
 };
 
-export default PixelatedHero;
+export default React.memo(PixelatedHero, (prev, next) =>
+  prev.translations === next.translations
+);

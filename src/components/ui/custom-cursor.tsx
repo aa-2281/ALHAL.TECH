@@ -9,6 +9,10 @@ export const CustomCursor = ({ variant = 'dark' }: CustomCursorProps) => {
     const cursorOutlineRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
 
+    // Store mouse position in ref for RAF access
+    const mousePos = useRef({ x: 0, y: 0 });
+    const rafId = useRef<number | null>(null);
+
     useEffect(() => {
         // Only enable on desktop
         const mediaQuery = window.matchMedia("(min-width: 768px)");
@@ -16,29 +20,39 @@ export const CustomCursor = ({ variant = 'dark' }: CustomCursorProps) => {
 
         setIsVisible(true);
 
-        const onMouseMove = (e: MouseEvent) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
+        // RAF-based cursor update loop
+        const updateCursor = () => {
+            const { x, y } = mousePos.current;
 
-            // Dot follows instantly
+            // Use transform: translate3d for GPU acceleration
             if (cursorDotRef.current) {
-                cursorDotRef.current.style.left = `${posX}px`;
-                cursorDotRef.current.style.top = `${posY}px`;
+                cursorDotRef.current.style.transform =
+                    `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
             }
 
-            // Outline follows with lag using animate for smooth performance
+            // Smooth follow for outline using animate API
             if (cursorOutlineRef.current) {
-                cursorOutlineRef.current.animate({
-                    left: `${posX}px`,
-                    top: `${posY}px`
-                }, { duration: 500, fill: "forwards" });
+                cursorOutlineRef.current.animate(
+                    {
+                        transform: `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
+                    },
+                    { duration: 500, fill: "forwards" }
+                );
             }
+
+            rafId.current = requestAnimationFrame(updateCursor);
+        };
+
+        // Simple mousemove - just updates position ref (no DOM work)
+        const onMouseMove = (e: MouseEvent) => {
+            mousePos.current = { x: e.clientX, y: e.clientY };
         };
 
         const onMouseEnter = () => document.body.classList.add('hovering');
         const onMouseLeave = () => document.body.classList.remove('hovering');
 
-        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mousemove', onMouseMove, { passive: true });
+        rafId.current = requestAnimationFrame(updateCursor);
 
         // Add hover effect listeners to interactive elements
         const addHoverListeners = () => {
@@ -50,12 +64,20 @@ export const CustomCursor = ({ variant = 'dark' }: CustomCursorProps) => {
 
         addHoverListeners();
 
-        // Re-add listeners if DOM changes (simple observer for this use case)
-        const observer = new MutationObserver(addHoverListeners);
+        // Debounced MutationObserver (100ms debounce)
+        let mutationTimeout: number;
+        const observer = new MutationObserver(() => {
+            clearTimeout(mutationTimeout);
+            mutationTimeout = window.setTimeout(addHoverListeners, 100);
+        });
         observer.observe(document.body, { childList: true, subtree: true });
 
         return () => {
             window.removeEventListener('mousemove', onMouseMove);
+            if (rafId.current) {
+                cancelAnimationFrame(rafId.current);
+            }
+            clearTimeout(mutationTimeout);
             observer.disconnect();
             document.querySelectorAll('a, button, input, select, textarea, .hoverable').forEach(el => {
                 el.removeEventListener('mouseenter', onMouseEnter);
@@ -75,13 +97,14 @@ export const CustomCursor = ({ variant = 'dark' }: CustomCursorProps) => {
         <>
             <div
                 ref={cursorDotRef}
-                className={`fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 ${dotColor} rounded-full z-[9999] pointer-events-none ${dotShadow} custom-cursor-dot`}
+                className={`fixed left-0 top-0 w-2 h-2 ${dotColor} rounded-full z-[9999] pointer-events-none ${dotShadow} custom-cursor-dot`}
+                style={{ willChange: 'transform' }}
             />
             <div
                 ref={cursorOutlineRef}
-                className={`fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border ${outlineColor} rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline`}
+                className={`fixed left-0 top-0 w-10 h-10 border ${outlineColor} rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline`}
+                style={{ willChange: 'transform' }}
             />
         </>
     );
 };
-
