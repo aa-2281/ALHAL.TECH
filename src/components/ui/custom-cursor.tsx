@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const CustomCursor = () => {
+interface CustomCursorProps {
+    variant?: 'dark' | 'light';
+}
+
+export const CustomCursor = ({ variant = 'dark' }: CustomCursorProps) => {
     const cursorDotRef = useRef<HTMLDivElement>(null);
     const cursorOutlineRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
@@ -63,16 +67,21 @@ export const CustomCursor = () => {
 
     if (!isVisible) return null;
 
+    const outlineColor = variant === 'light' ? 'border-white/50' : 'border-black/50';
+    const dotColor = variant === 'light' ? 'bg-white' : 'bg-brand-cyan';
+    const dotShadow = variant === 'light' ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'shadow-[0_0_10px_var(--brand-cyan)]';
+
     return (
         <>
             <div
                 ref={cursorDotRef}
-                className="fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-brand-cyan rounded-full z-[9999] pointer-events-none shadow-[0_0_10px_var(--brand-cyan)] custom-cursor-dot"
+                className={`fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 ${dotColor} rounded-full z-[9999] pointer-events-none ${dotShadow} custom-cursor-dot`}
             />
             <div
                 ref={cursorOutlineRef}
-                className="fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border border-black/50 rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline"
+                className={`fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 border ${outlineColor} rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline`}
             />
         </>
     );
 };
+

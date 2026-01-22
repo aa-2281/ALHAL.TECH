@@ -1,22 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
-import { cn } from "@/lib/utils"
+import { Link } from 'react-router-dom'
 import { CanvasBackground } from "@/components/ui/canvas-background"
 import { CustomCursor } from "@/components/ui/custom-cursor"
-import { ServicesCarousel } from "@/components/services-carousel"
-import { LucideMenu, LucideX, LucideChevronRight, LucideCheck, LucideMail, LucidePhone, LucideSend, LucideGlobe, LucideZap, LucideShield, LucideMessageCircle } from "lucide-react"
+import { SelectedWork } from "@/components/selected-work"
+import { ExpertiseSection } from "@/components/expertise-section"
+import StackCards, { StackCard } from "@/components/StackCards"
+import PixelatedHero from "@/components/PixelatedHero"
+import StickyNavbar from "@/components/StickyNavbar"
+import Footer from "@/components/Footer"
+import { AnimatedText } from "@/components/ui/animated-text"
+import { LucideSend } from "lucide-react"
 import Lenis from 'lenis'
+// SVG imports removed. Using absolute paths from public folder.
+
 
 // --- DATA ---
-
-
-const whyUsData = [
-  "Agile Development Methodology",
-  "24/7 Technical Support",
-  "Scalable Architecture",
-  "User-Centric Design",
-  "Transparent Pricing",
-  "Post-Launch Maintenance"
-];
 
 const translations = {
   en: {
@@ -26,6 +24,14 @@ const translations = {
     heroTitlePart1: "Smart Solutions,", heroTitlePart2: "Real Results",
     heroSubtitle: "Apps, AI, and automation — everything your business needs to thrive in the digital age.",
     heroCTA: "Contact Us", heroSecondCTA: "Explore Services",
+    heroPhase1Title: "Smart Solutions,",
+    heroPhase1Subtitle: "for your business.",
+    heroPhase1Desc: "Apps, AI, and automation — everything your business needs to thrive in the digital age.",
+    heroPhase2Title: "AI Automation",
+    heroPhase2Subtitle: "systems, and more...",
+    heroPhase2Prefix: "with",
+    heroPhase2Brand: "ALHAL TECH",
+    heroPhase2Desc: "Streamline your workflow with intelligent automation powered by cutting-edge AI.",
     servicesLabel: "What We Do", servicesTitle: "Our Ecosystem", servicesSubtitle: "A complete suite of digital services designed to scale with your ambition.", viewAllServices: "View full details",
     carouselLabel: "Our Solutions", carouselTitle1: "Comprehensive Digital", carouselTitle2: "Protection & Growth", carouselLearnMore: "Learn more",
     whyUsLabel: "Why Choose Us", whyUsTitle: "Why visionary companies choose Al Hal Tech",
@@ -33,15 +39,34 @@ const translations = {
     portfolioLabel: "Our Work", portfolioTitle: "Featured Projects", portfolioSubtitle: "Transforming ideas into digital reality. Here's a glimpse of our recent work.", portfolioViewAll: "View All Projects",
     testimonialsLabel: "Testimonials", testimonialsTitle: "What Our Clients Say",
     finalCtaTitle: "Ready to disrupt the market?", finalCtaSubtitle: "Let's build technology that sets you apart. Schedule your free strategy session today.", finalCtaButton: "Launch Project",
-    contactLabel: "Get in Touch", contactTitle: "Let's build something extraordinary", contactSubtitle: "Have a project in mind? We'd love to hear about it. Send us a message and we'll get back to you within 24 hours.",
-    contactEmailLabel: "Email Us", contactPhoneLabel: "Call Us",
-    formName: "Name", formEmail: "Email", formSubject: "Subject", formMessage: "Message", formSubmit: "Send Message",
+    contactLabel: "Get in Touch",
     footerDesc: "Engineering the digital future from Sulaymaniyah to the world.", footerServices: "Services", footerCompany: "Company", footerSocial: "Connect",
     footerWebDev: "Web Development", footerMobile: "Mobile Applications", footerAutomation: "Automation", footerAI: "AI Solutions",
     footerAbout: "About Us", footerServicesLink: "Services", footerCareers: "Careers", footerContact: "Contact",
     footerCopyright: "© 2025 Al Hal Tech. All rights reserved.", footerPrivacy: "Privacy Policy", footerTerms: "Terms of Service",
-    formOptWebDev: "Web Development", formOptMobile: "Mobile App", formOptConsulting: "Consulting", formOptOther: "Other",
     sec2Title1: "Your Idea.", sec2Title2: "Our Expertise.",
+    expertiseTitle: "HOW\nCAN WE\nHELP YOUR BUSINESS",
+    expertiseTagline: "TAILORED SOLUTIONS DESIGNED TO ELEVATE YOUR BRAND AND DRIVE RESULTS",
+    expertiseLabel: "EXPERTISE",
+    expertiseField: "FIELD",
+    expertiseItems: [
+      { number: "01", name: "Website Design & Development" },
+      { number: "02", name: "AI Automations" },
+      { number: "03", name: "Brand Identity Design" },
+      { number: "08", name: "Mobile App Development" },
+      { number: "09", name: "Hosting & Deployment" },
+    ],
+    workTitle: "SELECTED WORK",
+    workTagline: "IMPACTFUL SOLUTIONS THAT\nSTAND OUT,\nCAPTURE ATTENTION,\nAND DRIVE MEASURABLE SUCCESS",
+    workLatest: "LATEST WORK",
+    workExplore: "EXPLORE",
+    workItems: [
+      { id: 1, title: "Automation Solution", category: "AI & Workflow", image: "/card1.svg", link: "/portfolio/automation" },
+      { id: 2, title: "Web Design", category: "Development", image: "/card2.svg", link: "/portfolio/web-design" },
+      { id: 3, title: "App Development", category: "Mobile", image: "/card3.svg", link: "/portfolio/app-development" },
+      { id: 4, title: "Custom Software", category: "Enterprise", image: "/card4.svg", link: "/portfolio/custom-software" },
+    ],
+    stackTitle: "Unblock the potential\nof your business\nwith AI Automation",
     sec2Subtitle: "We turn your vision into reality with cutting-edge technology and proven expertise.",
     sec2Badge1: "Speed & Innovation", sec2Heading1: "Launch Faster, Scale Smarter",
     sec2Desc1: "Our agile development process turns weeks into days. We build MVPs that validate your idea quickly, then scale with enterprise-grade architecture as you grow.",
@@ -62,22 +87,49 @@ const translations = {
     heroTitlePart1: "حلول ذكية،", heroTitlePart2: "نتائج حقيقية",
     heroSubtitle: "تطبيقات، ذكاء اصطناعي، وأتمتة — كل ما يحتاجه عملك للنجاح في العصر الرقمي.",
     heroCTA: "ابدأ مشروعك", heroSecondCTA: "استكشف الخدمات",
+    heroPhase1Title: "حلول ذكية",
+    heroPhase1Subtitle: "لمشروعك.",
+    heroPhase1Desc: "تطبيقات، ذكاء اصطناعي، وأتمتة — كل ما تحتاجه شركتك للنجاح في العصر الرقمي.",
+    heroPhase2Title: "أتمتة الذكاء الاصطناعي",
+    heroPhase2Subtitle: "والأنظمة، والمزيد...",
+    heroPhase2Prefix: "مع",
+    heroPhase2Brand: "الحل التقني",
+    heroPhase2Desc: "قم بتبسيط سير عملك باستخدام الأتمتة الذكية المدعومة بأحدث تقنيات الذكاء الاصطناعي.",
     servicesLabel: "ماذا نقدم", servicesTitle: "نظامنا البيئي", servicesSubtitle: "مجموعة كاملة من الخدمات الرقمية المصممة لتنمو مع طموحك.", viewAllServices: "عرض التفاصيل",
     carouselLabel: "حلولنا", carouselTitle1: "حماية رقمية شاملة", carouselTitle2: "ونمو مستدام", carouselLearnMore: "اعرف المزيد",
-    whyUsLabel: "لماذا تختارنا", whyUsTitle: "لماذا تختار الشركات الرائدة الحل تك",
+    whyUsLabel: "لماذا تختارنا", whyUsTitle: "لماذا تختار الشركات الرائدة الحل التقني",
     statsProjects: "إجمالي المشاريع", statsSatisfaction: "رضا العملاء", statsSupport: "دعم فني", statsSecurity: "أمان", statsClients: "عميل", statsYears: "سنوات خبرة",
     portfolioLabel: "أعمالنا", portfolioTitle: "مشاريع مميزة", portfolioSubtitle: "نحول الأفكار إلى واقع رقمي. إليك لمحة عن أحدث أعمالنا.", portfolioViewAll: "عرض كل المشاريع",
     testimonialsLabel: "آراء العملاء", testimonialsTitle: "ماذا يقول عملاؤنا",
     finalCtaTitle: "جاهز لاكتساح السوق؟", finalCtaSubtitle: "دعنا نبني التكنولوجيا التي تميزك. حدد موعدًا لاستشارتك المجانية اليوم.", finalCtaButton: "أطلق مشروعك",
-    contactLabel: "تواصل معنا", contactTitle: "لنصنع شيئاً استثنائياً", contactSubtitle: "هل لديك مشروع في ذهنك؟ نود أن نسمع عنه. راسلنا وسنرد عليك خلال 24 ساعة.",
-    contactEmailLabel: "راسلنا", contactPhoneLabel: "اتصل بنا",
-    formName: "الاسم", formEmail: "البريد الإلكتروني", formSubject: "الموضوع", formMessage: "الرسالة", formSubmit: "إرسال الرسالة",
+    contactLabel: "تواصل معنا",
     footerDesc: "هندسة المستقبل الرقمي من السليمانية إلى العالم.", footerServices: "الخدمات", footerCompany: "الشركة", footerSocial: "تواصل",
     footerWebDev: "تطوير الويب", footerMobile: "تطبيقات الجوال", footerAutomation: "الأتمتة", footerAI: "حلول الذكاء الاصطناعي",
     footerAbout: "من نحن", footerServicesLink: "الخدمات", footerCareers: "الوظائف", footerContact: "تواصل معنا",
-    footerCopyright: "© 2025 الحل تك. جميع الحقوق محفوظة.", footerPrivacy: "سياسة الخصوصية", footerTerms: "شروط الاستخدام",
-    formOptWebDev: "تطوير الويب", formOptMobile: "تطبيق جوال", formOptConsulting: "استشارات", formOptOther: "أخرى",
+    footerCopyright: "© 2025 الحل التقني. جميع الحقوق محفوظة.", footerPrivacy: "سياسة الخصوصية", footerTerms: "شروط الاستخدام",
     sec2Title1: "فكرتك.", sec2Title2: "خبرتنا.",
+    expertiseTitle: "كيف يمكننا\nمساعدة\nعملك التجاري",
+    expertiseTagline: "حلول مصممة خصيصاً لرفع قيمة علامتك التجارية وتحقيق النتائج",
+    expertiseLabel: "الخبرات",
+    expertiseField: "المجال",
+    expertiseItems: [
+      { number: "01", name: "تصميم وتطوير المواقع" },
+      { number: "02", name: "أتمتة الذكاء الاصطناعي" },
+      { number: "03", name: "تصميم الهوية التجارية" },
+      { number: "08", name: "تطوير تطبيقات الجوال" },
+      { number: "09", name: "الاستضافة والنشر" },
+    ],
+    workTitle: "أعمال مختارة",
+    workTagline: "حلول مؤثرة\nتتميز،\nتجذب الانتباه،\nوتحقق نجاحاً ملموساً",
+    workLatest: "أحدث الأعمال",
+    workExplore: "استكشف",
+    workItems: [
+      { id: 1, title: "حلول الأتمتة", category: "ذكاء اصطناعي", image: "/card1.svg", link: "/portfolio/automation" },
+      { id: 2, title: "تصميم الويب", category: "تطوير", image: "/card2.svg", link: "/portfolio/web-design" },
+      { id: 3, title: "تطوير التطبيقات", category: "جوال", image: "/card3.svg", link: "/portfolio/app-development" },
+      { id: 4, title: "برمجيات مخصصة", category: "مؤسسات", image: "/card4.svg", link: "/portfolio/custom-software" },
+    ],
+    stackTitle: "أطلق العنان\nلإمكانيات عملك\nمع أتمتة الذكاء الاصطناعي",
     sec2Subtitle: "نحول رؤيتك إلى واقع بتقنيات حديثة وخبرة مثبتة.",
     sec2Badge1: "السرعة والابتكار", sec2Heading1: "أطلق أسرع، توسع بذكاء",
     sec2Desc1: "عمليتنا المرنة تحول الأسابيع إلى أيام. نبني منتجات أولية تثبت فكرتك بسرعة، ثم نتوسع بهندسة مؤسسية مع نموك.",
@@ -118,28 +170,18 @@ function RevealOnScroll({ children, delay = 0, className = "" }: { children: Rea
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>('en');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [lang, setLang] = useState<Lang>(() => {
+    // Read saved language from localStorage, default to 'ar' (Arabic)
+    const savedLang = localStorage.getItem('alhaltech-lang');
+    return (savedLang === 'ar' || savedLang === 'en') ? savedLang : 'ar';
+  });
   const t = translations[lang];
-  const lastScrollY = useRef(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      // Update scrolled state for styling
-      setScrolled(currentScrollY > 50);
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
+  // Update document direction and save language preference
   useEffect(() => {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
+    localStorage.setItem('alhaltech-lang', lang);
   }, [lang]);
 
   useEffect(() => {
@@ -172,105 +214,12 @@ export default function App() {
       <CanvasBackground />
 
       <div className="relative z-10">
-        {/* Full Navbar - Visible at Top */}
-        <header
-          id="main-header"
-          className={cn(
-            "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
-            scrolled ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"
-          )}
-        >
-          <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between">
-            {/* Logo */}
-            <a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none">
-              <span className="font-extrabold text-2xl text-brand-dark tracking-tight">{t.logoPart1}</span>
-              <span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span>
-            </a>
-
-            {/* Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-8 text-sm font-medium">
-              <a href="#services" className="text-gray-600 hover:text-brand-dark transition-colors">{t.navServices}</a>
-              <a href="#why-us" className="text-gray-600 hover:text-brand-dark transition-colors">{t.navWhy}</a>
-              <a href="#portfolio" className="text-gray-600 hover:text-brand-dark transition-colors">{t.navPortfolio}</a>
-              <a href="#contact" className="bg-brand-red hover:bg-red-700 text-white px-6 py-2.5 rounded-full transition-all hover:scale-105">{t.navContact}</a>
-            </nav>
-
-            {/* Right Side Controls */}
-            <div className="flex items-center gap-4">
-              {/* Language Toggle */}
-              <div className="flex items-center bg-black/10 rounded-full p-1">
-                <button onClick={() => setLang('en')} aria-label="Switch to English" className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all", lang === 'en' ? "bg-white text-black" : "text-gray-600")}>
-                  EN
-                </button>
-                <button onClick={() => setLang('ar')} aria-label="Switch to Arabic" className={cn("px-3 py-1 rounded-full text-xs font-medium transition-all", lang === 'ar' ? "bg-white text-black" : "text-gray-600")}>
-                  ع
-                </button>
-              </div>
-              {/* Mobile Menu Button */}
-              <button onClick={() => setMobileMenuOpen(true)} aria-label="Open mobile menu" className="lg:hidden text-brand-dark p-2"><LucideMenu className="w-6 h-6" /></button>
-            </div>
-          </div>
-        </header>
-
-        {/* Sticky Side CTA Button - Visible on Scroll */}
-        <a
-          href="#contact"
-          aria-label="Contact us - Let's talk about your project"
-          className={cn(
-            "fixed z-50 transition-all duration-500 ease-in-out",
-            // Position: bottom corner with side offset
-            lang === 'ar' ? "left-6 bottom-8" : "right-6 bottom-8",
-            // Styling: Pill shape, Horizontal text
-            "text-white px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:brightness-110",
-            // Visibility based on scroll
-            scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
-          )}
-          style={{ backgroundColor: '#a92e26' }}
-        >
-          <LucideMessageCircle className="w-5 h-5" />
-          {t.navContact}
-        </a>
-
-        {/* Mobile Menu */}
-        <div className={cn("fixed top-0 right-0 w-full h-screen bg-white z-[60] lg:hidden transition-transform duration-300", mobileMenuOpen ? "translate-x-0" : "translate-x-full")}>
-          <div className="flex flex-col h-full">
-            <div className="flex justify-between items-center p-6 border-b border-black/5"><a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none"><span className="font-extrabold text-xl text-brand-dark tracking-tight">{t.logoPart1}</span><span className="font-bold text-xs text-brand-cyan tracking-widest">{t.logoPart2}</span></a><button onClick={() => setMobileMenuOpen(false)} aria-label="Close mobile menu" className="text-brand-dark p-2"><LucideX className="w-6 h-6" /></button></div>
-            <nav className="flex flex-col gap-6 p-8 text-lg">
-              <a href="#services" onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-brand-dark">{t.navServices}</a>
-              <a href="#why-us" onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-brand-dark">{t.navWhy}</a>
-              <a href="#portfolio" onClick={() => setMobileMenuOpen(false)} className="text-gray-600 hover:text-brand-dark">{t.navPortfolio}</a>
-              <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="bg-brand-red text-white px-6 py-3 rounded-full text-center">{t.navContact}</a>
-            </nav>
-          </div>
-        </div>
+        {/* Morphing Sticky Navbar */}
+        <StickyNavbar translations={t} lang={lang} setLang={setLang} />
 
         <main className="pt-0">
-          <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
-
-            <div className="container max-w-7xl mx-auto px-4 relative z-10 pt-32">
-              <div className="text-center max-w-4xl mx-auto">
-                <RevealOnScroll className="inline-flex items-center gap-2 bg-brand-navy/50 border border-brand-cyan/20 rounded-full px-4 py-2 mb-8">
-                  <span className="w-2 h-2 bg-brand-cyan rounded-full animate-pulse"></span>
-                  <span className="text-brand-cyan text-sm font-medium">{t.heroBadge}</span>
-                </RevealOnScroll>
-                <RevealOnScroll delay={100}>
-                  <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6">
-                    <span className="text-brand-dark">{t.heroTitlePart1}</span><br />
-                    <span className="bg-gradient-to-r from-brand-cyan to-brand-red bg-clip-text text-transparent">{t.heroTitlePart2}</span>
-                  </h1>
-                </RevealOnScroll>
-                <RevealOnScroll delay={200}>
-                  <p className="text-gray-600 text-lg sm:text-xl mb-10 max-w-2xl mx-auto">{t.heroSubtitle}</p>
-                </RevealOnScroll>
-                <RevealOnScroll delay={300} className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="#contact" className="bg-brand-red hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">
-                    {t.heroCTA} <LucideChevronRight className="w-5 h-5 rtl:rotate-180" />
-                  </a>
-                  <a href="#services" className="border border-brand-cyan text-brand-cyan hover:bg-brand-cyan hover:text-white px-8 py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2">{t.heroSecondCTA}</a>
-                </RevealOnScroll>
-              </div>
-            </div>
-          </section>
+          {/* Pixelated Hero Section */}
+          <PixelatedHero translations={t} />
 
           {/* Curved Arc Divider */}
           <div className="relative -mb-px">
@@ -283,227 +232,109 @@ export default function App() {
             >
               <path
                 d="M0,80 L0,0 Q720,80 1440,0 L1440,80 Z"
-                fill="#000000"
+                fill="#1a1a1a"
               />
             </svg>
           </div>
 
-          {/* Value Proposition Section */}
-          <section className="py-24 bg-brand-dark relative overflow-hidden -mt-px">
-            {/* PixelTrail Hover Effect Background - REMOVED */}
-            <div className="absolute inset-0 z-0">
+          {/* Expertise Section */}
+          <ExpertiseSection translations={t} />
+
+          <section id="services" className="py-12 bg-[#1a1a1a]">
+            <SelectedWork translations={t} />
+          </section>
+
+          {/* StackCards Section */}
+          <section className="pt-12 md:pt-16 pb-[20vh] bg-[#1a1a1a] text-[#e8e4df] px-4 md:px-12 lg:px-20">
+            <div className="max-w-[1400px] mx-auto mb-12 md:mb-16">
+              <AnimatedText
+                text={t.stackTitle}
+                className="font-['Anton',sans-serif] text-[32px] sm:text-[52px] md:text-[68px] lg:text-[84px] font-normal leading-[1em] tracking-[0em] uppercase text-[#e8e4df] text-center"
+                staggerDelay={35}
+                duration={750}
+              />
             </div>
+            <StackCards>
+              <StackCard
+                className="bg-[#2d2d2d] text-[#e8e4df] p-6"
+              >
+                <div className="flex flex-col items-center gap-6 text-center">
 
-            <div className="container max-w-7xl mx-auto px-4 relative z-10">
-              <div className="text-center max-w-3xl mx-auto mb-16">
-                <RevealOnScroll>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                    {t.sec2Title1} <span className="text-gray-400">{t.sec2Title2}</span>
-                  </h2>
-                </RevealOnScroll>
-                <RevealOnScroll delay={100}>
-                  <p className="text-xl text-gray-400 leading-relaxed">
-                    {t.sec2Subtitle}
-                  </p>
-                </RevealOnScroll>
-              </div>
-
-              {/* Feature Row 1: Image Left, Text Right */}
-              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-20">
-                <RevealOnScroll className="order-2 lg:order-1">
-                  <img
-                    src="/a0a303f3-8d9d-4a6c-92ac-777891978c3b.svg"
-                    alt={t.sec2Badge1}
-                    className="w-full max-w-md mx-auto lg:mx-0 drop-shadow-xl"
-                  />
-                </RevealOnScroll>
-                <RevealOnScroll delay={200} className="order-1 lg:order-2">
-                  <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                      <LucideZap className="w-4 h-4" /> {t.sec2Badge1}
-                    </div>
-                    <h3 className="text-3xl lg:text-4xl font-bold text-white">
-                      {t.sec2Heading1}
-                    </h3>
-                    <p className="text-lg text-gray-400 leading-relaxed">
-                      {t.sec2Desc1}
-                    </p>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-gray-300">
-                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check1a}
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-300">
-                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check1b}
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-300">
-                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check1c}
-                      </li>
-                    </ul>
+                  <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                    <img
+                      src="/3.svg"
+                      alt="Strategic Planning"
+                      className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
+                    />
                   </div>
-                </RevealOnScroll>
-              </div>
+                </div>
+              </StackCard>
 
-              {/* Feature Row 2: Text Left, Image Right */}
-              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                <RevealOnScroll delay={100}>
-                  <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                      <LucideShield className="w-4 h-4" /> {t.sec2Badge2}
-                    </div>
-                    <h3 className="text-3xl lg:text-4xl font-bold text-white">
-                      {t.sec2Heading2}
-                    </h3>
-                    <p className="text-lg text-gray-400 leading-relaxed">
-                      {t.sec2Desc2}
-                    </p>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-gray-300">
-                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check2a}
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-300">
-                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check2b}
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-300">
-                        <LucideCheck className="w-5 h-5 text-white" /> {t.sec2Check2c}
-                      </li>
-                    </ul>
+              <StackCard
+                className="bg-[#2d2d2d] text-[#e8e4df] p-6"
+              >
+                <div className="flex flex-col items-center gap-6 text-center">
+                  <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                    <img
+                      src="/4.svg"
+                      alt="AI Implementation"
+                      className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
+                    />
                   </div>
-                </RevealOnScroll>
-                <RevealOnScroll delay={200}>
-                  <img
-                    src="/a0a3044c-a1fd-4bf0-a637-03d08f9e5d8e.svg"
-                    alt={t.sec2Badge2}
-                    className="w-full max-w-md mx-auto lg:mx-0 lg:ml-auto drop-shadow-xl"
-                  />
-                </RevealOnScroll>
-              </div>
-            </div>
-          </section>
-
-          <section id="services" className="py-20 bg-brand-navy/20">
-            <ServicesCarousel
-              translations={{
-                label: t.carouselLabel,
-                title1: t.carouselTitle1,
-                title2: t.carouselTitle2,
-                learnMore: t.carouselLearnMore,
-                solutions: ""
-              }}
-              services={[
-                { id: 1, title: t.svc1Title, description: t.svc1Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=800" },
-                { id: 2, title: t.svc2Title, description: t.svc2Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&q=80&w=800" },
-                { id: 3, title: t.svc3Title, description: t.svc3Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" },
-                { id: 4, title: t.svc4Title, description: t.svc4Desc, gradient: "from-neutral-800 to-neutral-900", image: "/istock-962219860-2-scaled.jpg" },
-                { id: 5, title: t.svc5Title, description: t.svc5Desc, gradient: "from-neutral-800 to-neutral-900", image: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?auto=format&fit=crop&q=80&w=800" }
-              ]}
-            />
-          </section>
-
-          <section id="why-us" className="py-24">
-            <div className="container max-w-7xl mx-auto px-4">
-              <div className="max-w-3xl mx-auto text-center">
-                <RevealOnScroll>
-                  <span className="text-brand-red font-semibold text-sm uppercase mb-3 block">{t.whyUsLabel}</span>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-12 text-brand-dark">{t.whyUsTitle}</h2>
-                </RevealOnScroll>
-                <div className="grid md:grid-cols-2 gap-6 text-left">
-                  {whyUsData.map((point, i) => (
-                    <RevealOnScroll key={i} delay={i * 100}>
-                      <div className="flex items-center gap-4 group cursor-default glass-panel p-5 rounded-2xl border border-black/5 hover:border-brand-cyan/20 transition-all">
-                        <div className="w-10 h-10 rounded-full bg-brand-red/10 flex items-center justify-center text-brand-red border border-brand-red/20 group-hover:bg-brand-red group-hover:text-white transition-all flex-shrink-0">
-                          <LucideCheck className="w-5 h-5" />
-                        </div>
-                        <span className="text-lg text-gray-700 group-hover:text-brand-red transition-colors font-medium">{point}</span>
-                      </div>
-                    </RevealOnScroll>
-                  ))}
                 </div>
-              </div>
-            </div>
+              </StackCard>
+
+              <StackCard
+                className="bg-[#2d2d2d] text-[#e8e4df] p-6"
+              >
+                <div className="flex flex-col items-center gap-6 text-center">
+                  <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                    <img
+                      src="/5.svg"
+                      alt="Growth Analytics"
+                      className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+              </StackCard>
+            </StackCards>
           </section>
 
+          {/* Wave Divider */}
+          <div className="relative -mt-px bg-[#1a1a1a]">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="w-full h-auto block transform scale-y-[-1]" preserveAspectRatio="none">
+              <path fill="#ffffff" fillOpacity="1" d="M0,256L0,96L46.5,96L46.5,224L92.9,224L92.9,256L139.4,256L139.4,224L185.8,224L185.8,160L232.3,160L232.3,32L278.7,32L278.7,224L325.2,224L325.2,96L371.6,96L371.6,96L418.1,96L418.1,256L464.5,256L464.5,128L511,128L511,160L557.4,160L557.4,192L603.9,192L603.9,256L650.3,256L650.3,96L696.8,96L696.8,128L743.2,128L743.2,224L789.7,224L789.7,160L836.1,160L836.1,192L882.6,192L882.6,96L929,96L929,128L975.5,128L975.5,0L1021.9,0L1021.9,224L1068.4,224L1068.4,32L1114.8,32L1114.8,160L1161.3,160L1161.3,128L1207.7,128L1207.7,96L1254.2,96L1254.2,192L1300.6,192L1300.6,96L1347.1,96L1347.1,192L1393.5,192L1393.5,64L1440,64L1440,0L1393.5,0L1393.5,0L1347.1,0L1347.1,0L1300.6,0L1300.6,0L1254.2,0L1254.2,0L1207.7,0L1207.7,0L1161.3,0L1161.3,0L1114.8,0L1114.8,0L1068.4,0L1068.4,0L1021.9,0L1021.9,0L975.5,0L975.5,0L929,0L929,0L882.6,0L882.6,0L836.1,0L836.1,0L789.7,0L789.7,0L743.2,0L743.2,0L696.8,0L696.8,0L650.3,0L650.3,0L603.9,0L603.9,0L557.4,0L557.4,0L511,0L511,0L464.5,0L464.5,0L418.1,0L418.1,0L371.6,0L371.6,0L325.2,0L325.2,0L278.7,0L278.7,0L232.3,0L232.3,0L185.8,0L185.8,0L139.4,0L139.4,0L92.9,0L92.9,0L46.5,0L46.5,0L0,0L0,0Z"></path>
+            </svg>
+          </div>
 
-
-          <section className="py-24">
-            <div className="container max-w-7xl mx-auto px-4">
-              <RevealOnScroll className="glass-panel rounded-3xl p-12 sm:p-16 text-center border border-black/10 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-red/10 via-transparent to-brand-cyan/10"></div>
-                <div className="relative z-10">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-brand-dark">{t.finalCtaTitle}</h2>
-                  <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">{t.finalCtaSubtitle}</p>
-                  <a href="#contact" className="inline-flex items-center gap-2 bg-brand-red hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold transition-all">
-                    {t.finalCtaButton} <LucideChevronRight className="w-5 h-5 rtl:rotate-180" />
-                  </a>
-                </div>
+          {/* CTA Section */}
+          <section id="contact" className="py-16 md:py-24 lg:py-32 bg-white">
+            <div className="container max-w-5xl mx-auto px-4 text-center">
+              <RevealOnScroll>
+                <span className="text-brand-cyan font-semibold text-xs md:text-sm uppercase mb-4 block tracking-widest">{t.contactLabel}</span>
+                <AnimatedText
+                  text={t.finalCtaTitle}
+                  className="font-['Anton',sans-serif] text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-normal uppercase text-brand-dark mb-4 md:mb-6 leading-[0.95] flex flex-wrap justify-center"
+                  staggerDelay={40}
+                  duration={800}
+                />
+                <p className="text-gray-600 text-base md:text-lg lg:text-xl max-w-2xl mx-auto mb-8 md:mb-10 px-4">
+                  {t.finalCtaSubtitle}
+                </p>
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center gap-2 md:gap-3 bg-brand-red hover:bg-red-700 text-white font-bold text-base md:text-lg px-6 md:px-10 py-3 md:py-5 rounded-2xl transition-all shadow-lg shadow-brand-red/20 hover:shadow-xl hover:shadow-brand-red/30 hover:-translate-y-1"
+                >
+                  {t.finalCtaButton}
+                  <LucideSend className="w-4 md:w-5 h-4 md:h-5 rtl:rotate-180" />
+                </Link>
               </RevealOnScroll>
             </div>
           </section>
 
-          <section id="contact" className="py-24">
-            <div className="container max-w-7xl mx-auto px-4">
-              <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
-                <RevealOnScroll>
-                  <span className="text-brand-cyan font-semibold text-sm uppercase mb-3 block">{t.contactLabel}</span>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-6 text-brand-dark">{t.contactTitle}</h2>
-                  <p className="text-gray-600 text-lg mb-12">{t.contactSubtitle}</p>
-                  <div className="space-y-8">
-                    <div className="flex items-start gap-5 group rtl:flex-row-reverse rtl:text-right">
-                      <div className="w-12 h-12 rounded-xl bg-brand-navy/50 flex items-center justify-center text-brand-red group-hover:scale-110 transition-transform border border-brand-light/5">
-                        <LucideMail className="w-6 h-6" />
-                      </div>
-                      <div><h3 className="text-xl font-bold text-brand-dark mb-1">{t.contactEmailLabel}</h3><a href="mailto:yasir@alhaltech.com" className="text-gray-600 hover:text-brand-cyan transition-colors">yasir@alhaltech.com</a></div>
-                    </div>
-                    <div className="flex items-start gap-5 group rtl:flex-row-reverse rtl:text-right">
-                      <div className="w-12 h-12 rounded-xl bg-brand-navy/50 flex items-center justify-center text-brand-cyan group-hover:scale-110 transition-transform border border-brand-light/5">
-                        <LucidePhone className="w-6 h-6" />
-                      </div>
-                      <div><h3 className="text-xl font-bold text-brand-dark mb-1">{t.contactPhoneLabel}</h3><a href="tel:+9647507834121" className="text-gray-600 hover:text-brand-cyan transition-colors" dir="ltr">+964 750 783 4121</a></div>
-                    </div>
-                  </div>
-                </RevealOnScroll>
-                <RevealOnScroll delay={200}>
-                  <div className="glass-panel rounded-3xl p-8 sm:p-10 border border-black/10">
-
-                    <div className="space-y-2 mb-6"><label htmlFor="subject" className="text-sm font-medium text-gray-700 ml-1">{t.formSubject}</label><select id="contactSubject" className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-black focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all outline-none appearance-none"><option>{t.formOptWebDev}</option><option>{t.formOptMobile}</option><option>{t.formOptConsulting}</option><option>{t.formOptOther}</option></select></div>
-                    <div className="space-y-2 mb-8"><label htmlFor="message" className="text-sm font-medium text-gray-700 ml-1">{t.formMessage}</label><textarea id="contactMessage" rows={4} className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-black focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan transition-all outline-none resize-none" placeholder={lang === 'ar' ? "اكتب تفاصيل مشروعك هنا..." : "Tell us about your project..."}></textarea></div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const name = (document.getElementById('contactName') as HTMLInputElement)?.value || '';
-                        const email = (document.getElementById('contactEmail') as HTMLInputElement)?.value || '';
-                        const subject = (document.getElementById('contactSubject') as HTMLSelectElement)?.value || '';
-                        const message = (document.getElementById('contactMessage') as HTMLTextAreaElement)?.value || '';
-                        const body = `Name: ${name}%0D%0AEmail: ${email}%0D%0A%0D%0AMessage:%0D%0A${encodeURIComponent(message)}`;
-                        window.location.href = `mailto:yasir@alhaltech.com?subject=${encodeURIComponent(subject)}&body=${body}`;
-                      }}
-                      className="w-full bg-brand-red hover:bg-red-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
-                    >
-                      {t.formSubmit} <LucideSend className="w-5 h-5 rtl:rotate-180" />
-                    </button>
-                  </div>
-                </RevealOnScroll>
-              </div>
-            </div>
-          </section>
         </main>
 
-        <footer className="bg-brand-dark border-t border-white/10 pt-16 pb-8 text-sm">
-          <div className="container max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-              <div className="space-y-4">
-                <a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none"><span className="font-extrabold text-2xl text-white tracking-tight">{t.logoPart1}</span><span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span></a>
-                <p className="text-gray-500">{t.footerDesc}</p>
-              </div>
-              <div><h3 className="font-bold text-white mb-6 text-lg">{t.footerServices}</h3><ul className="space-y-3"><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerWebDev}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerMobile}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAutomation}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAI}</a></li></ul></div>
-              <div><h3 className="font-bold text-white mb-6 text-lg">{t.footerCompany}</h3><ul className="space-y-3"><li><a href="#why-us" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAbout}</a></li><li><a href="#services" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerServicesLink}</a></li><li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerCareers}</a></li><li><a href="#contact" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerContact}</a></li></ul></div>
-              <div><h3 className="font-bold text-white mb-6 text-lg">{t.footerSocial}</h3><div className="flex gap-4">
-                <a href="#" aria-label="Visit our website" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1"><LucideGlobe className="w-5 h-5" /></a>
-                <a href="mailto:yasir@alhaltech.com" aria-label="Send us an email" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1"><LucideMail className="w-5 h-5" /></a>
-              </div></div>
-            </div>
-            <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4"><p className="text-gray-500">{t.footerCopyright}</p><div className="flex gap-6 text-gray-500"><a href="#" className="hover:text-brand-cyan transition-colors">{t.footerPrivacy}</a><a href="#" className="hover:text-brand-cyan transition-colors">{t.footerTerms}</a></div></div>
-          </div>
-        </footer>
+        <Footer translations={t} />
       </div>
     </div>
   )
