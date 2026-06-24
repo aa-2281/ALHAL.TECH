@@ -23,6 +23,11 @@ export function AnimatedText({
     const isArabic = (text: string) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(text);
     const hasArabicText = isArabic(text);
 
+    // Reset animation flag when text changes (e.g., language switch)
+    useEffect(() => {
+        hasAnimated.current = false;
+    }, [text]);
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container || hasAnimated.current) return;
@@ -53,7 +58,7 @@ export function AnimatedText({
         observer.observe(container);
 
         return () => observer.disconnect();
-    }, [delay, staggerDelay, duration]);
+    }, [text, delay, staggerDelay, duration]);
 
     // Split text into lines, then words, then letters (or keep whole words for Arabic)
     const lines = text.split('\n');

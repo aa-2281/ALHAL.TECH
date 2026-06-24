@@ -2,8 +2,22 @@ import { cn } from "@/lib/utils"
 import { Link } from "react-router-dom"
 import { AnimatedText } from "@/components/ui/animated-text"
 
+interface WorkItem {
+  id: number;
+  title: string;
+  category: string;
+  image: string;
+  link?: string;
+}
+
 interface SelectedWorkProps {
-  translations: any;
+  translations: {
+    workItems: WorkItem[];
+    workTitle: string;
+    workTagline: string;
+    workLatest: string;
+    workExplore: string;
+  };
 }
 
 export function SelectedWork({ translations: t }: SelectedWorkProps) {
@@ -35,7 +49,7 @@ export function SelectedWork({ translations: t }: SelectedWorkProps) {
 
       {/* Work Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
-        {workData.map((item: any, index: number) => {
+        {workData.map((item: WorkItem, index: number) => {
           // Add back visual properties
           const gradients = [
             "from-[#1a1a1a] to-[#2a2a2a]",
@@ -53,7 +67,7 @@ export function SelectedWork({ translations: t }: SelectedWorkProps) {
                 gradients[index % gradients.length]
               )}>
                 {item.image && (
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 )}
               </div>
 

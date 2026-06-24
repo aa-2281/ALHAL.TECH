@@ -3,6 +3,7 @@ import emailjs from '@emailjs/browser'
 import { LucideSend, LucideArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { CustomCursor } from "@/components/ui/custom-cursor"
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 const translations = {
     en: {
@@ -70,6 +71,12 @@ const translations = {
 type Lang = 'en' | 'ar';
 
 export default function ContactPage() {
+    usePageMeta({
+        title: 'Contact | ALHAL TECH',
+        description: 'Request a service from Al Hal Tech. Tell us about your project - apps, AI, automation, or custom software - and we will reply within 24 hours.',
+        canonical: 'https://alhaltech.com/contact',
+    })
+
     const [lang, setLang] = useState<Lang>(() => {
         const savedLang = localStorage.getItem('alhaltech-lang');
         return (savedLang === 'ar' || savedLang === 'en') ? savedLang : 'ar';
@@ -101,9 +108,11 @@ export default function ContactPage() {
     });
     const [isSending, setIsSending] = useState(false);
     const [isSent, setIsSent] = useState(false);
+    const [honeypot, setHoneypot] = useState('');
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (honeypot) { setIsSent(true); setTimeout(() => setIsSent(false), 5000); return; } // silently drop bots
         if (!formData.service_name || !formData.full_name || !formData.phone) {
             alert(lang === 'ar' ? "يرجى ملء الحقول الأساسية (الاسم، الهاتف، والخدمة)" : "Please fill in the basic fields (Name, Phone, and Service)");
             return;
@@ -122,7 +131,7 @@ export default function ContactPage() {
             await emailjs.send(
                 'service_3uoe609',
                 'template_ne9ctc4',
-                emailData as any,
+                emailData as Record<string, unknown>,
                 'mVQbB9UW39MlhBVPg'
             );
             setIsSent(true);
@@ -194,8 +203,9 @@ export default function ContactPage() {
                                 {/* Basic Info */}
                                 <div className="grid sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300 block">{t.formName}</label>
+                                        <label htmlFor="full_name" className="text-sm font-medium text-gray-300 block">{t.formName}</label>
                                         <input
+                                            id="full_name"
                                             type="text"
                                             required
                                             placeholder={t.formPlaceholderName}
@@ -205,8 +215,9 @@ export default function ContactPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300 block">{t.formBusiness}</label>
+                                        <label htmlFor="business_name" className="text-sm font-medium text-gray-300 block">{t.formBusiness}</label>
                                         <input
+                                            id="business_name"
                                             type="text"
                                             placeholder={t.formPlaceholderBusiness}
                                             className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none transition-all"
@@ -218,8 +229,9 @@ export default function ContactPage() {
 
                                 <div className="grid sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300 block">{t.formPhone}</label>
+                                        <label htmlFor="phone" className="text-sm font-medium text-gray-300 block">{t.formPhone}</label>
                                         <input
+                                            id="phone"
                                             type="tel"
                                             required
                                             placeholder={t.formPlaceholderPhone}
@@ -229,8 +241,9 @@ export default function ContactPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300 block">{t.formLink}</label>
+                                        <label htmlFor="link" className="text-sm font-medium text-gray-300 block">{t.formLink}</label>
                                         <input
+                                            id="link"
                                             type="url"
                                             placeholder={t.formPlaceholderLink}
                                             className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none transition-all"
@@ -242,9 +255,10 @@ export default function ContactPage() {
 
                                 {/* Service Selection */}
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300 block">{t.formService}</label>
+                                    <label htmlFor="service_name" className="text-sm font-medium text-gray-300 block">{t.formService}</label>
                                     <div className="relative">
                                         <select
+                                            id="service_name"
                                             required
                                             className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none transition-all appearance-none"
                                             value={formData.service_name}
@@ -268,8 +282,9 @@ export default function ContactPage() {
                                 {formData.service_name === "Automation AI solution" ? (
                                     <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-300 block">{t.formProblem}</label>
+                                            <label htmlFor="problem_description" className="text-sm font-medium text-gray-300 block">{t.formProblem}</label>
                                             <textarea
+                                                id="problem_description"
                                                 rows={3}
                                                 placeholder={t.formPlaceholderProblem}
                                                 className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none resize-none transition-all"
@@ -278,8 +293,9 @@ export default function ContactPage() {
                                             ></textarea>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-300 block">{t.formExpected}</label>
+                                            <label htmlFor="expected_result" className="text-sm font-medium text-gray-300 block">{t.formExpected}</label>
                                             <textarea
+                                                id="expected_result"
                                                 rows={3}
                                                 placeholder={t.formPlaceholderExpected}
                                                 className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none resize-none transition-all"
@@ -290,8 +306,9 @@ export default function ContactPage() {
                                     </div>
                                 ) : formData.service_name !== "" && (
                                     <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
-                                        <label className="text-sm font-medium text-gray-300 block">{t.formNotes}</label>
+                                        <label htmlFor="notes" className="text-sm font-medium text-gray-300 block">{t.formNotes}</label>
                                         <textarea
+                                            id="notes"
                                             rows={4}
                                             placeholder={t.formPlaceholderNotes}
                                             className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none resize-none transition-all"
@@ -304,8 +321,9 @@ export default function ContactPage() {
                                 {/* Common Fields */}
                                 {formData.service_name !== "" && (
                                     <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
-                                        <label className="text-sm font-medium text-gray-300 block">{t.formBudget}</label>
+                                        <label htmlFor="budget" className="text-sm font-medium text-gray-300 block">{t.formBudget}</label>
                                         <input
+                                            id="budget"
                                             type="text"
                                             placeholder={t.formBudgetPlaceholder}
                                             className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-cyan outline-none transition-all"
@@ -314,6 +332,18 @@ export default function ContactPage() {
                                         />
                                     </div>
                                 )}
+
+                                {/* Honeypot field - hidden from real users; bots that fill it are silently dropped */}
+                                <input
+                                    type="text"
+                                    name="company_website"
+                                    value={honeypot}
+                                    onChange={(e) => setHoneypot(e.target.value)}
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                    aria-hidden="true"
+                                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
+                                />
 
                                 <button
                                     type="submit"

@@ -58,19 +58,17 @@ html.lenis body {
 }
 
 /* Custom Cursor Logic */
-@media (min-width: 768px) {
-  body {
-    cursor: none;
+@media (min-width: 768px) and (pointer: fine) {
+
+  body,
+  a,
+  button,
+  [role="button"] {
+    cursor: none !important;
   }
 }
 
-body.hovering .custom-cursor-outline {
-  width: 60px;
-  height: 60px;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-color: #000000;
-  mix-blend-mode: difference;
-}
+
 
 /* Animations */
 .reveal-on-scroll {

@@ -5,106 +5,99 @@ interface CustomCursorProps {
 }
 
 export const CustomCursor = ({ variant = 'dark' }: CustomCursorProps) => {
-    const cursorDotRef = useRef<HTMLDivElement>(null);
-    const cursorOutlineRef = useRef<HTMLDivElement>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    // Store mouse position in ref for RAF access
-    const mousePos = useRef({ x: 0, y: 0 });
-    const rafId = useRef<number | null>(null);
+    const color = variant === 'light' ? '#ffffff' : '#fbbf24';
+    const cursorRef = useRef<HTMLDivElement>(null);
+    const [isVisible] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+    );
 
     useEffect(() => {
         // Only enable on desktop
-        const mediaQuery = window.matchMedia("(min-width: 768px)");
-        if (!mediaQuery.matches) return;
+        if (!isVisible) return;
 
-        setIsVisible(true);
-
-        // RAF-based cursor update loop
-        const updateCursor = () => {
-            const { x, y } = mousePos.current;
-
-            // Use transform: translate3d for GPU acceleration
-            if (cursorDotRef.current) {
-                cursorDotRef.current.style.transform =
-                    `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+        const moveCursor = (e: MouseEvent) => {
+            if (cursorRef.current) {
+                // Direct movement for immediate (native-like) response
+                cursorRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
             }
+        };
 
-            // Smooth follow for outline using animate API
-            if (cursorOutlineRef.current) {
-                cursorOutlineRef.current.animate(
-                    {
-                        transform: `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
-                    },
-                    { duration: 500, fill: "forwards" }
-                );
+        const handleMouseDown = () => {
+            if (cursorRef.current) {
+                cursorRef.current.querySelector('svg')?.style.setProperty('transform', 'scale(0.9) rotate(-12deg)');
             }
-
-            rafId.current = requestAnimationFrame(updateCursor);
         };
 
-        // Simple mousemove - just updates position ref (no DOM work)
-        const onMouseMove = (e: MouseEvent) => {
-            mousePos.current = { x: e.clientX, y: e.clientY };
+        const handleMouseUp = () => {
+            if (cursorRef.current) {
+                cursorRef.current.querySelector('svg')?.style.setProperty('transform', 'scale(1) rotate(-12deg)');
+            }
         };
 
-        const onMouseEnter = () => document.body.classList.add('hovering');
-        const onMouseLeave = () => document.body.classList.remove('hovering');
-
-        window.addEventListener('mousemove', onMouseMove, { passive: true });
-        rafId.current = requestAnimationFrame(updateCursor);
-
-        // Add hover effect listeners to interactive elements
-        const addHoverListeners = () => {
-            document.querySelectorAll('a, button, input, select, textarea, .hoverable').forEach(el => {
-                el.addEventListener('mouseenter', onMouseEnter);
-                el.addEventListener('mouseleave', onMouseLeave);
-            });
+        const handleLinkHover = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.matches('a, button, input, select, textarea, .hoverable, [role="button"]')) {
+                cursorRef.current?.classList.add('hover-active');
+            }
         };
 
-        addHoverListeners();
+        const handleLinkLeave = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.matches('a, button, input, select, textarea, .hoverable, [role="button"]')) {
+                cursorRef.current?.classList.remove('hover-active');
+            }
+        };
 
-        // Debounced MutationObserver (100ms debounce)
-        let mutationTimeout: number;
-        const observer = new MutationObserver(() => {
-            clearTimeout(mutationTimeout);
-            mutationTimeout = window.setTimeout(addHoverListeners, 100);
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('mousemove', moveCursor, { passive: true });
+        window.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mouseover', handleLinkHover, { passive: true });
+        document.addEventListener('mouseout', handleLinkLeave, { passive: true });
 
+        // Cleanup
         return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            if (rafId.current) {
-                cancelAnimationFrame(rafId.current);
-            }
-            clearTimeout(mutationTimeout);
-            observer.disconnect();
-            document.querySelectorAll('a, button, input, select, textarea, .hoverable').forEach(el => {
-                el.removeEventListener('mouseenter', onMouseEnter);
-                el.removeEventListener('mouseleave', onMouseLeave);
-            });
-            document.body.classList.remove('hovering');
+            window.removeEventListener('mousemove', moveCursor);
+            window.removeEventListener('mousedown', handleMouseDown);
+            window.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('mouseover', handleLinkHover);
+            document.removeEventListener('mouseout', handleLinkLeave);
         };
-    }, []);
+    }, [isVisible]);
 
     if (!isVisible) return null;
 
-    const outlineColor = variant === 'light' ? 'border-white/50' : 'border-black/50';
-    const dotColor = variant === 'light' ? 'bg-white' : 'bg-brand-cyan';
-    const dotShadow = variant === 'light' ? 'shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'shadow-[0_0_10px_var(--brand-cyan)]';
-
     return (
-        <>
-            <div
-                ref={cursorDotRef}
-                className={`fixed left-0 top-0 w-2 h-2 ${dotColor} rounded-full z-[9999] pointer-events-none ${dotShadow} custom-cursor-dot`}
-                style={{ willChange: 'transform' }}
-            />
-            <div
-                ref={cursorOutlineRef}
-                className={`fixed left-0 top-0 w-10 h-10 border ${outlineColor} rounded-full z-[9999] pointer-events-none transition-[width,height,background-color] duration-200 custom-cursor-outline`}
-                style={{ willChange: 'transform' }}
-            />
-        </>
+        <div
+            ref={cursorRef}
+            className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[9999] drop-shadow-lg transition-colors duration-200"
+            style={{
+                willChange: 'transform',
+                // Offset so the tip of the arrow is at the mouse position
+                marginTop: '-4px',
+                marginLeft: '-4px',
+                color: color // 'light' -> white, default amber-400
+            }}
+        >
+            <style>{`
+                .hover-active {
+                    color: #f59e0b !important; /* amber-500 on hover */
+                }
+            `}</style>
+            <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-full h-full transition-transform duration-100 ease-out"
+                style={{ transform: 'rotate(-12deg)' }} // Initial rotation
+            >
+                <path
+                    d="M5.5 3.5L11.5 21.5L14.5 13.5L22.5 10.5L5.5 3.5Z"
+                    stroke="none"
+                    strokeWidth="0"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+            </svg>
+        </div>
     );
 };

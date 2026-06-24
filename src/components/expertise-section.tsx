@@ -1,8 +1,19 @@
 import { cn } from "@/lib/utils"
 import { AnimatedText } from "@/components/ui/animated-text"
 
+interface ExpertiseItem {
+  number: string;
+  name: string;
+}
+
 interface ExpertiseSectionProps {
-  translations: any;
+  translations: {
+    expertiseItems: ExpertiseItem[];
+    expertiseTitle: string;
+    expertiseTagline: string;
+    expertiseLabel: string;
+    expertiseField: string;
+  };
 }
 
 export function ExpertiseSection({ translations: t }: ExpertiseSectionProps) {
@@ -51,7 +62,7 @@ export function ExpertiseSection({ translations: t }: ExpertiseSectionProps) {
           </div>
 
           <ul className="list-none">
-            {expertiseData.map((item: any, index: number) => (
+            {expertiseData.map((item: ExpertiseItem, index: number) => (
               <li
                 key={index}
                 className={cn(

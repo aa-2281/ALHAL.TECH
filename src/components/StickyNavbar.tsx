@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LucideMenu, LucideX } from 'lucide-react';
+import { LucideMenu, LucideX, LucidePhone, LucideMail } from 'lucide-react';
+import { FaFacebookF, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +12,7 @@ interface StickyNavbarProps {
     navServices: string;
     navWhy: string;
     navPortfolio: string;
+    navAbout: string;
     navContact: string;
   };
   lang: 'en' | 'ar';
@@ -59,7 +61,7 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
             "will-change-transform will-change-opacity"
           )}
           animate={{
-            width: scrolled ? '280px' : 'min(92vw, 900px)',
+            width: scrolled ? '320px' : 'min(92vw, 900px)',
             marginLeft: scrolled ? 'auto' : 'auto',
             marginRight: scrolled ? '8px' : 'auto',
             borderRadius: scrolled ? '24px' : '20px',
@@ -76,7 +78,7 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
         >
           {/* Logo */}
           <motion.a
-            href="#"
+            href="/"
             dir="ltr"
             aria-label="ALHAL TECH - Go to homepage"
             className="flex items-baseline gap-1 shrink-0 px-5 py-3"
@@ -120,6 +122,7 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
               <a href="#services" className="text-white/70 hover:text-white transition-colors uppercase tracking-wider text-xs font-semibold whitespace-nowrap">{t.navServices}</a>
               <a href="#why-us" className="text-white/70 hover:text-white transition-colors uppercase tracking-wider text-xs font-semibold whitespace-nowrap">{t.navWhy}</a>
               <a href="#portfolio" className="text-white/70 hover:text-white transition-colors uppercase tracking-wider text-xs font-semibold whitespace-nowrap">{t.navPortfolio}</a>
+              <Link to="/about" className="text-white/70 hover:text-white transition-colors uppercase tracking-wider text-xs font-semibold whitespace-nowrap">{t.navAbout}</Link>
             </div>
           </motion.div>
 
@@ -182,11 +185,15 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
               </button>
             </motion.div>
 
-            {/* Mobile Menu Button - Always visible on mobile */}
+            {/* Mobile Menu Button - Always visible on mobile, also visible when scrolled on desktop */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open mobile menu"
-              className="lg:hidden text-white p-1 ml-2"
+              aria-label="Open menu"
+              className={cn(
+                "text-white p-1 transition-all",
+                scrolled ? "block" : "lg:hidden",
+                scrolled ? "ml-1" : "ml-2"
+              )}
             >
               <LucideMenu className="w-5 h-5" />
             </button>
@@ -194,16 +201,16 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
         </motion.nav>
       </motion.header>
 
-      {/* Mobile Menu */}
+      {/* Mobile/Scrolled Menu */}
       <div
         className={cn(
-          "fixed top-0 right-0 w-full h-screen bg-white z-[60] lg:hidden transition-transform duration-300",
+          "fixed top-0 right-0 w-full h-screen bg-white z-[60] transition-transform duration-300",
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center p-6 border-b border-black/5">
-            <a href="#" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex items-baseline gap-1">
+            <a href="/" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex items-baseline gap-1">
               <span className="font-extrabold text-xl text-black tracking-tight">{t.logoPart1}</span>
               <span className="font-bold text-xs text-black/60 tracking-widest">{t.logoPart2}</span>
             </a>
@@ -238,6 +245,13 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
               {t.navPortfolio}
             </a>
             <Link
+              to="/about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-gray-600 hover:text-black"
+            >
+              {t.navAbout}
+            </Link>
+            <Link
               to="/contact"
               onClick={() => setMobileMenuOpen(false)}
               className="bg-black text-white px-6 py-3 rounded-full text-center"
@@ -264,6 +278,25 @@ const StickyNavbar: React.FC<StickyNavbarProps> = ({ translations: t, lang, setL
               >
                 العربية
               </button>
+            </div>
+
+            {/* Social Media Icons */}
+            <div className="flex items-center gap-3 pt-6 border-t border-black/10">
+              <a href="https://www.facebook.com/profile.php?id=61586347270934" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#1877F2] hover:text-white transition-all">
+                <FaFacebookF className="w-4 h-4" />
+              </a>
+              <a href="https://www.instagram.com/alhal.tech/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#FCAF45] hover:text-white transition-all">
+                <FaInstagram className="w-4 h-4" />
+              </a>
+              <a href="https://wa.me/9647783782248" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-[#25D366] hover:text-white transition-all">
+                <FaWhatsapp className="w-5 h-5" />
+              </a>
+              <a href="tel:+9647783782248" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all">
+                <LucidePhone className="w-4 h-4" />
+              </a>
+              <a href="mailto:info@alhaltech.com" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-all">
+                <LucideMail className="w-4 h-4" />
+              </a>
             </div>
           </nav>
         </div>

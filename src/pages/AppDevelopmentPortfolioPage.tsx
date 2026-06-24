@@ -4,6 +4,7 @@ import { LucideArrowLeft, LucideSmartphone, LucideCode, LucideRocket, LucideExte
 import { CustomCursor } from "@/components/ui/custom-cursor"
 import { AnimatedText } from "@/components/ui/animated-text"
 import Footer from "@/components/Footer"
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 const translations = {
     en: {
@@ -24,7 +25,7 @@ const translations = {
         excellentFor: "Perfect for:",
         logoPart1: "ALHAL",
         logoPart2: "TECH",
-        footerDesc: "Engineering the digital future from Sulaymaniyah to the world.",
+        footerDesc: "Engineering the digital future from Mosul & Sulaymaniyah to the world.",
         footerServices: "Services",
         footerCompany: "Company",
         footerSocial: "Connect",
@@ -85,7 +86,7 @@ const translations = {
         excellentFor: "مثالي لـ:",
         logoPart1: "ALHAL",
         logoPart2: "TECH",
-        footerDesc: "هندسة المستقبل الرقمي من السليمانية إلى العالم.",
+        footerDesc: "هندسة المستقبل الرقمي من الموصل والسليمانية إلى العالم.",
         footerServices: "الخدمات",
         footerCompany: "الشركة",
         footerSocial: "تواصل",
@@ -147,6 +148,12 @@ const IconComponent = ({ name, className }: { name: string; className?: string }
 type Lang = 'en' | 'ar';
 
 export default function AppDevelopmentPortfolioPage() {
+    usePageMeta({
+        title: 'Mobile App Development | ALHAL TECH',
+        description: 'Native and cross-platform iOS and Android apps designed for engagement and performance.',
+        canonical: 'https://alhaltech.com/portfolio/app-development'
+    });
+
     const [lang, setLang] = useState<Lang>(() => {
         const savedLang = localStorage.getItem('alhaltech-lang');
         return (savedLang === 'ar' || savedLang === 'en') ? savedLang : 'ar';
@@ -239,7 +246,7 @@ export default function AppDevelopmentPortfolioPage() {
                                     to="/contact"
                                     className="inline-flex items-center gap-2 mt-8 bg-brand-red hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg shadow-brand-red/20"
                                 >
-                                    {(t as any).ctaButton}
+                                    {t.ctaButton}
                                     <LucideExternalLink className="w-4 h-4 rtl:rotate-180" />
                                 </Link>
                             </div>

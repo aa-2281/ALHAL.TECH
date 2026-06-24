@@ -1,9 +1,9 @@
-import { LucideMail, LucideGlobe } from 'lucide-react'
+import { LucideMail, LucidePhone } from 'lucide-react'
+import { FaFacebookF, FaInstagram, FaWhatsapp } from 'react-icons/fa'
 
 interface FooterTranslations {
     logoPart1: string;
     logoPart2: string;
-    footerDesc: string;
     footerServices: string;
     footerCompany: string;
     footerSocial: string;
@@ -29,12 +29,11 @@ export default function Footer({ translations: t }: FooterProps) {
         <footer className="bg-brand-dark border-t border-white/10 pt-16 pb-8 text-sm">
             <div className="container max-w-7xl mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                    <div className="space-y-4">
-                        <a href="/" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none">
-                            <span className="font-extrabold text-2xl text-white tracking-tight">{t.logoPart1}</span>
-                            <span className="font-bold text-sm text-brand-cyan tracking-widest">{t.logoPart2}</span>
+                    <div>
+                        <a href="/" dir="ltr" aria-label="ALHAL TECH - Go to homepage" className="flex flex-col leading-none mb-6">
+                            <span className="font-extrabold text-3xl tracking-tight" style={{ color: '#ffffff' }}>{t.logoPart1}</span>
+                            <span className="font-bold text-base tracking-widest" style={{ color: '#7e7e7eff' }}>{t.logoPart2}</span>
                         </a>
-                        <p className="text-gray-500">{t.footerDesc}</p>
                     </div>
                     <div>
                         <h3 className="font-bold text-white mb-6 text-lg">{t.footerServices}</h3>
@@ -48,20 +47,29 @@ export default function Footer({ translations: t }: FooterProps) {
                     <div>
                         <h3 className="font-bold text-white mb-6 text-lg">{t.footerCompany}</h3>
                         <ul className="space-y-3">
-                            <li><a href="/#why-us" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAbout}</a></li>
+                            <li><a href="/about" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerAbout}</a></li>
                             <li><a href="/#services" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerServicesLink}</a></li>
-                            <li><a href="#" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerCareers}</a></li>
+                            <li><a href="/contact" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerCareers}</a></li>
                             <li><a href="/contact" className="text-gray-400 hover:text-brand-cyan transition-colors">{t.footerContact}</a></li>
                         </ul>
                     </div>
                     <div>
                         <h3 className="font-bold text-white mb-6 text-lg">{t.footerSocial}</h3>
-                        <div className="flex gap-4">
-                            <a href="/" aria-label="Visit our website" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1">
-                                <LucideGlobe className="w-5 h-5" />
+                        <div className="flex gap-3 flex-wrap">
+                            <a href="https://www.facebook.com/profile.php?id=61586347270934" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#1877F2] transition-all hover:-translate-y-1">
+                                <FaFacebookF className="w-4 h-4" />
                             </a>
-                            <a href="mailto:yasir@alhaltech.com" aria-label="Send us an email" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red hover:text-white transition-all hover:-translate-y-1">
-                                <LucideMail className="w-5 h-5" />
+                            <a href="https://www.instagram.com/alhal.tech/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#FCAF45] transition-all hover:-translate-y-1">
+                                <FaInstagram className="w-4 h-4" />
+                            </a>
+                            <a href="https://wa.me/9647783782248" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#25D366] transition-all hover:-translate-y-1">
+                                <FaWhatsapp className="w-5 h-5" />
+                            </a>
+                            <a href="tel:+9647783782248" aria-label="Phone" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-cyan transition-all hover:-translate-y-1">
+                                <LucidePhone className="w-4 h-4" />
+                            </a>
+                            <a href="mailto:info@alhaltech.com" aria-label="Email" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-red transition-all hover:-translate-y-1">
+                                <LucideMail className="w-4 h-4" />
                             </a>
                         </div>
                     </div>
@@ -69,8 +77,8 @@ export default function Footer({ translations: t }: FooterProps) {
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-gray-500">{t.footerCopyright}</p>
                     <div className="flex gap-6 text-gray-500">
-                        <a href="#" className="hover:text-brand-cyan transition-colors">{t.footerPrivacy}</a>
-                        <a href="#" className="hover:text-brand-cyan transition-colors">{t.footerTerms}</a>
+                        <a href="/privacy-policy" className="hover:text-brand-cyan transition-colors">{t.footerPrivacy}</a>
+                        <a href="/terms-of-service" className="hover:text-brand-cyan transition-colors">{t.footerTerms}</a>
                     </div>
                 </div>
             </div>

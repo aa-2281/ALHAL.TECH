@@ -4,27 +4,28 @@ import { LucideArrowLeft, LucideExternalLink, LucideUsers, LucideFileText, Lucid
 import { CustomCursor } from "@/components/ui/custom-cursor"
 import { AnimatedText } from "@/components/ui/animated-text"
 import Footer from "@/components/Footer"
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 const translations = {
     en: {
         backToHome: "Back to Home",
         pageTitle: "Automation Solutions",
         pageSubtitle: "Intelligent workflow automation powered by AI",
-        description: "I specialize in building powerful automation workflows that save time, reduce errors, and scale your business operations. Using n8n and custom integrations, I create solutions that connect your tools and automate repetitive tasks.",
+        description: "We specialize in building powerful automation workflows that save time, reduce errors, and scale your business operations. Using n8n, Make.com, Python, or any tool that fits your needs, we create custom solutions that connect your tools and automate repetitive tasks.",
         capabilities: [
-            "Custom n8n workflow development",
+            "Custom workflow development (n8n, Make.com, Zapier)",
+            "Python automation & scripting",
             "API integrations & data sync",
             "AI-powered automation triggers",
             "Business process optimization",
-            "Real-time notifications & alerts",
-            "Multi-platform connectivity"
+            "Real-time notifications & alerts"
         ],
         capabilitiesTitle: "What I Automate",
         projectsTitle: "Featured Automations",
         excellentFor: "Excellent for:",
         logoPart1: "ALHAL",
         logoPart2: "TECH",
-        footerDesc: "Engineering the digital future from Sulaymaniyah to the world.",
+        footerDesc: "Engineering the digital future from Mosul & Sulaymaniyah to the world.",
         footerServices: "Services",
         footerCompany: "Company",
         footerSocial: "Connect",
@@ -89,27 +90,30 @@ const translations = {
                 industries: ["Finance", "Healthcare", "Legal", "Tech Companies"]
             }
         ],
-        ctaButton: "Start Your Project"
+        ctaButton: "Start Your Project",
+        customIdeaTitle: "Have a Different Idea?",
+        customIdeaDesc: "Got an automation idea we haven't listed? Something that could speed up your workflow or solve a unique challenge? Let's talk! We love building custom solutions that make your life easier.",
+        customIdeaButton: "Share Your Idea"
     },
     ar: {
         backToHome: "العودة للرئيسية",
         pageTitle: "حلول الأتمتة",
         pageSubtitle: "أتمتة الأعمال بتقنية الذكاء الاصطناعي",
-        description: "أتخصص في بناء سير عمل أتمتة قوية توفر الوقت وتقلل الأخطاء وتوسع عمليات أعمالك. باستخدام n8n والتكاملات المخصصة، أنشئ حلولاً تربط أدواتك وتؤتمت المهام المتكررة.",
+        description: "نتخصص في بناء سير عمل أتمتة قوية توفر الوقت وتقلل الأخطاء وتوسع عمليات أعمالك. باستخدام n8n أو Make.com أو Python أو أي أداة تناسب احتياجاتك، ننشئ حلولاً مخصصة تربط أدواتك وتؤتمت المهام المتكررة.",
         capabilities: [
-            "تطوير سير عمل n8n مخصص",
+            "تطوير سير عمل مخصص (n8n، Make.com، Zapier)",
+            "أتمتة وبرمجة Python",
             "تكامل API ومزامنة البيانات",
             "مشغلات أتمتة بالذكاء الاصطناعي",
             "تحسين العمليات التجارية",
-            "إشعارات وتنبيهات فورية",
-            "اتصال متعدد المنصات"
+            "إشعارات وتنبيهات فورية"
         ],
         capabilitiesTitle: "ما أقوم بأتمتته",
         projectsTitle: "أعمال الأتمتة المميزة",
         excellentFor: "ممتاز لـ:",
         logoPart1: "ALHAL",
         logoPart2: "TECH",
-        footerDesc: "هندسة المستقبل الرقمي من السليمانية إلى العالم.",
+        footerDesc: "هندسة المستقبل الرقمي من الموصل والسليمانية إلى العالم.",
         footerServices: "الخدمات",
         footerCompany: "الشركة",
         footerSocial: "تواصل",
@@ -174,7 +178,10 @@ const translations = {
                 industries: ["المالية", "الرعاية الصحية", "القانون", "شركات التقنية"]
             }
         ],
-        ctaButton: "ابدأ مشروعك"
+        ctaButton: "ابدأ مشروعك",
+        customIdeaTitle: "لديك فكرة مختلفة؟",
+        customIdeaDesc: "هل لديك فكرة أتمتة لم نذكرها؟ شيء يمكن أن يسرّع سير عملك أو يحل تحدياً فريداً؟ دعنا نتحدث! نحن نحب بناء حلول مخصصة تجعل حياتك أسهل.",
+        customIdeaButton: "شارك فكرتك"
     }
 };
 
@@ -201,6 +208,12 @@ const IconComponent = ({ name, className }: { name: string; className?: string }
 type Lang = 'en' | 'ar';
 
 export default function AutomationPortfolioPage() {
+    usePageMeta({
+        title: 'AI & Workflow Automation | ALHAL TECH',
+        description: 'Custom automation with n8n, Make.com and Python - AI-powered workflows that save time and scale your operations.',
+        canonical: 'https://alhaltech.com/portfolio/automation'
+    });
+
     const [lang, setLang] = useState<Lang>(() => {
         // Read saved language from localStorage, default to 'ar' (Arabic)
         const savedLang = localStorage.getItem('alhaltech-lang');
@@ -294,7 +307,7 @@ export default function AutomationPortfolioPage() {
                                     to="/contact"
                                     className="inline-flex items-center gap-2 mt-8 bg-brand-red hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg shadow-brand-red/20"
                                 >
-                                    {(t as any).ctaButton}
+                                    {t.ctaButton}
                                     <LucideExternalLink className="w-4 h-4 rtl:rotate-180" />
                                 </Link>
                             </div>
@@ -351,6 +364,23 @@ export default function AutomationPortfolioPage() {
                                     </div>
                                 ))}
                             </div>
+                        </div>
+
+                        {/* Custom Idea CTA Section */}
+                        <div className="mt-20 bg-gradient-to-br from-brand-cyan/10 to-brand-red/10 rounded-3xl p-10 md:p-16 border border-white/20 text-center">
+                            <h2 className="font-['Anton',sans-serif] text-3xl md:text-4xl lg:text-5xl font-normal uppercase text-[#1a1a1a] mb-6">
+                                {t.customIdeaTitle}
+                            </h2>
+                            <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+                                {t.customIdeaDesc}
+                            </p>
+                            <Link
+                                to="/contact"
+                                className="inline-flex items-center gap-2 bg-[#1a1a1a] hover:bg-black text-white font-bold text-lg px-10 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                            >
+                                {t.customIdeaButton}
+                                <LucideExternalLink className="w-5 h-5 rtl:rotate-180" />
+                            </Link>
                         </div>
                     </div>
                 </main>

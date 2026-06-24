@@ -104,7 +104,7 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
       grid.push(column);
     }
     return grid;
-  }, []);
+  }, [getRandomColor]);
 
   useEffect(() => {
     const pixelLayer = pixelLayerRef.current;
@@ -165,13 +165,13 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
         pixelLayer.style.setProperty('--pixel-opacity', pixelOpacity.toString());
 
         // Update text color via CSS variables
+        // Transition from off-white (#e8e4df = 232,228,223) to black (0,0,0) as pixels fade
         if (textOverlayRef.current) {
+          // Start off-white, end black (inverted for white background)
           const r = Math.round(232 * pixelOpacity);
           const g = Math.round(228 * pixelOpacity);
           const b = Math.round(223 * pixelOpacity);
-          textOverlayRef.current.style.setProperty('--text-r', r.toString());
-          textOverlayRef.current.style.setProperty('--text-g', g.toString());
-          textOverlayRef.current.style.setProperty('--text-b', b.toString());
+          textOverlayRef.current.style.color = `rgb(${r}, ${g}, ${b})`;
         }
 
         // Trigger color change every 75px of scroll (increased threshold)
@@ -251,7 +251,7 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
         {/* Text overlay on top of pixels - visible from start */}
         <div className={`pixel-overlay-text phase-${currentPhase}`} ref={textOverlayRef} style={{ color: '#e8e4df' }}>
           <div className="pixelatedTitleBg" style={{ opacity: bgOpacity, transition: 'opacity 0.5s ease' }}></div>
-          <h1 className="pixel-overlay-title">
+          <div className="pixel-overlay-title">
             {titlePhases[currentPhase].title}<br />
             {titlePhases[currentPhase].subtitle}
             {titlePhases[currentPhase].prefix && <><br />{titlePhases[currentPhase].prefix}</>}
@@ -278,7 +278,7 @@ const PixelatedHero: React.FC<PixelatedHeroProps> = ({ translations: t }) => {
                 </span>
               </>
             )}
-          </h1>
+          </div>
           <p className="pixel-overlay-subtitle">
             {titlePhases[currentPhase].description}
           </p>

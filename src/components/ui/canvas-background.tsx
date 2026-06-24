@@ -1,51 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-// Spatial Grid for O(n) particle lookups instead of O(n²)
-class SpatialGrid {
-    private cellSize: number;
-    private grid: Map<string, Particle[]>;
-
-    constructor(cellSize: number = 100) {
-        this.cellSize = cellSize;
-        this.grid = new Map();
-    }
-
-    private getKey(x: number, y: number): string {
-        const col = Math.floor(x / this.cellSize);
-        const row = Math.floor(y / this.cellSize);
-        return `${col},${row}`;
-    }
-
-    clear() {
-        this.grid.clear();
-    }
-
-    insert(particle: Particle) {
-        const key = this.getKey(particle.x, particle.y);
-        if (!this.grid.has(key)) {
-            this.grid.set(key, []);
-        }
-        this.grid.get(key)!.push(particle);
-    }
-
-    getNearby(particle: Particle, distance: number): Particle[] {
-        const nearby: Particle[] = [];
-        const cells = Math.ceil(distance / this.cellSize);
-        const centerCol = Math.floor(particle.x / this.cellSize);
-        const centerRow = Math.floor(particle.y / this.cellSize);
-
-        for (let dx = -cells; dx <= cells; dx++) {
-            for (let dy = -cells; dy <= cells; dy++) {
-                const key = `${centerCol + dx},${centerRow + dy}`;
-                if (this.grid.has(key)) {
-                    nearby.push(...this.grid.get(key)!);
-                }
-            }
-        }
-        return nearby;
-    }
-}
-
 // Particle class defined outside component to avoid recreation
 class Particle {
     x: number;
@@ -94,6 +48,7 @@ class Particle {
 export const CanvasBackground = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const isVisibleRef = useRef(true);
+    const isScrollingRef = useRef(false);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -106,30 +61,40 @@ export const CanvasBackground = () => {
         let height = 0;
         let animationFrameId: number;
         const particles: Particle[] = [];
-        const spatialGrid = new SpatialGrid(100);
 
         // Resize Canvas
         const resize = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            // Update particle bounds
             particles.forEach(p => p.updateDimensions(width, height));
         };
         window.addEventListener('resize', resize);
         resize();
 
-        // Init Particles
-        for (let i = 0; i < 50; i++) {
+        // Reduced particle count for better performance (35 instead of 50)
+        const PARTICLE_COUNT = 35;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
             particles.push(new Particle(width, height, ctx));
         }
 
-        // Mouse position (stored in ref-like object for performance)
+        // Mouse position
         const mouse = { x: -1000, y: -1000 };
         const handleMouseMove = (e: MouseEvent) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
         };
         window.addEventListener('mousemove', handleMouseMove, { passive: true });
+
+        // Pause during scroll for better performance
+        let scrollTimeout: number;
+        const handleScroll = () => {
+            isScrollingRef.current = true;
+            clearTimeout(scrollTimeout);
+            scrollTimeout = window.setTimeout(() => {
+                isScrollingRef.current = false;
+            }, 150);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
 
         // IntersectionObserver to pause when off-screen
         const observer = new IntersectionObserver(
@@ -145,26 +110,23 @@ export const CanvasBackground = () => {
         const PARTICLE_CONNECTION_OPACITY = 0.2;
         const MOUSE_DISTANCE = 200;
         const PARTICLE_DISTANCE = 100;
+        const PARTICLE_DISTANCE_SQ = PARTICLE_DISTANCE * PARTICLE_DISTANCE;
+        const MOUSE_DISTANCE_SQ = MOUSE_DISTANCE * MOUSE_DISTANCE;
 
         // Animation Loop
         const animate = () => {
-            // Skip rendering if not visible (0% CPU when off-screen)
-            if (!isVisibleRef.current) {
+            // Skip rendering if not visible or scrolling
+            if (!isVisibleRef.current || isScrollingRef.current) {
                 animationFrameId = requestAnimationFrame(animate);
                 return;
             }
 
             ctx.clearRect(0, 0, width, height);
 
-            // Rebuild spatial grid
-            spatialGrid.clear();
-
-            // Update and draw all particles, insert into grid
+            // Update and draw all particles
             for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-                p.update();
-                p.draw();
-                spatialGrid.insert(p);
+                particles[i].update();
+                particles[i].draw();
             }
 
             // Draw mouse connections
@@ -172,9 +134,10 @@ export const CanvasBackground = () => {
                 const p = particles[i];
                 const dx = mouse.x - p.x;
                 const dy = mouse.y - p.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                const distSq = dx * dx + dy * dy;
 
-                if (distance < MOUSE_DISTANCE) {
+                if (distSq < MOUSE_DISTANCE_SQ) {
+                    const distance = Math.sqrt(distSq);
                     ctx.beginPath();
                     ctx.strokeStyle = `rgba(0, 0, 0, ${MOUSE_CONNECTION_OPACITY * (1 - distance / MOUSE_DISTANCE)})`;
                     ctx.lineWidth = 0.5;
@@ -184,36 +147,23 @@ export const CanvasBackground = () => {
                 }
             }
 
-            // O(n) particle connections using spatial grid
-            const processed = new Set<string>();
-
+            // Simplified particle connections - use index comparison instead of string keys
             for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-                const nearby = spatialGrid.getNearby(p, PARTICLE_DISTANCE);
+                const p1 = particles[i];
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const distSq = dx * dx + dy * dy;
 
-                for (let j = 0; j < nearby.length; j++) {
-                    const p2 = nearby[j];
-                    if (p === p2) continue;
-
-                    // Create unique pair key to avoid duplicate lines
-                    const pairKey = p.x < p2.x || (p.x === p2.x && p.y < p2.y)
-                        ? `${p.x},${p.y}-${p2.x},${p2.y}`
-                        : `${p2.x},${p2.y}-${p.x},${p.y}`;
-
-                    if (processed.has(pairKey)) continue;
-
-                    const dx = p.x - p2.x;
-                    const dy = p.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < PARTICLE_DISTANCE) {
+                    if (distSq < PARTICLE_DISTANCE_SQ) {
+                        const dist = Math.sqrt(distSq);
                         ctx.beginPath();
                         ctx.strokeStyle = `rgba(0, 0, 0, ${PARTICLE_CONNECTION_OPACITY * (1 - dist / PARTICLE_DISTANCE)})`;
                         ctx.lineWidth = 0.2;
-                        ctx.moveTo(p.x, p.y);
+                        ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.stroke();
-                        processed.add(pairKey);
                     }
                 }
             }
@@ -225,6 +175,8 @@ export const CanvasBackground = () => {
         return () => {
             window.removeEventListener('resize', resize);
             window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('scroll', handleScroll);
+            clearTimeout(scrollTimeout);
             observer.disconnect();
             cancelAnimationFrame(animationFrameId);
         };

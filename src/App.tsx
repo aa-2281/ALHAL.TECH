@@ -4,11 +4,12 @@ import { CanvasBackground } from "@/components/ui/canvas-background"
 import { CustomCursor } from "@/components/ui/custom-cursor"
 import { SelectedWork } from "@/components/selected-work"
 import { ExpertiseSection } from "@/components/expertise-section"
-import StackCards, { StackCard } from "@/components/StackCards"
+
 import PixelatedHero from "@/components/PixelatedHero"
 import StickyNavbar from "@/components/StickyNavbar"
 import Footer from "@/components/Footer"
 import { AnimatedText } from "@/components/ui/animated-text"
+import { usePageMeta } from '@/hooks/usePageMeta'
 import { LucideSend } from "lucide-react"
 import Lenis from 'lenis'
 import gsap from 'gsap'
@@ -23,7 +24,7 @@ gsap.registerPlugin(ScrollTrigger)
 const translations = {
   en: {
     logoPart1: "ALHAL", logoPart2: "TECH",
-    navServices: "Services", navWhy: "Why Us", navPortfolio: "Portfolio", navContact: "Let's Talk",
+    navServices: "Services", navWhy: "Why Us", navPortfolio: "Portfolio", navAbout: "About Us", navContact: "Let's Talk",
     heroBadge: "Accepting New Projects",
     heroTitlePart1: "Smart Solutions,", heroTitlePart2: "Real Results",
     heroSubtitle: "Apps, AI, and automation — everything your business needs to thrive in the digital age.",
@@ -44,7 +45,7 @@ const translations = {
     testimonialsLabel: "Testimonials", testimonialsTitle: "What Our Clients Say",
     finalCtaTitle: "Ready to disrupt the market?", finalCtaSubtitle: "Let's build technology that sets you apart. Schedule your free strategy session today.", finalCtaButton: "Launch Project",
     contactLabel: "Get in Touch",
-    footerDesc: "Engineering the digital future from Sulaymaniyah to the world.", footerServices: "Services", footerCompany: "Company", footerSocial: "Connect",
+    footerServices: "Services", footerCompany: "Company", footerSocial: "Connect",
     footerWebDev: "Web Development", footerMobile: "Mobile Applications", footerAutomation: "Automation", footerAI: "AI Solutions",
     footerAbout: "About Us", footerServicesLink: "Services", footerCareers: "Careers", footerContact: "Contact",
     footerCopyright: "© 2025 Al Hal Tech. All rights reserved.", footerPrivacy: "Privacy Policy", footerTerms: "Terms of Service",
@@ -65,10 +66,10 @@ const translations = {
     workLatest: "LATEST WORK",
     workExplore: "EXPLORE",
     workItems: [
-      { id: 1, title: "Automation Solution", category: "AI & Workflow", image: "/card1.svg", link: "/portfolio/automation" },
-      { id: 2, title: "Web Design", category: "Development", image: "/card2.svg", link: "/portfolio/web-design" },
-      { id: 3, title: "App Development", category: "Mobile", image: "/card3.svg", link: "/portfolio/app-development" },
-      { id: 4, title: "Custom Software", category: "Enterprise", image: "/card4.svg", link: "/portfolio/custom-software" },
+      { id: 1, title: "Automation Solution", category: "AI & Workflow", image: "/card1.webp", link: "/portfolio/automation" },
+      { id: 2, title: "Web Design", category: "Development", image: "/card2.webp", link: "/portfolio/web-design" },
+      { id: 3, title: "App Development", category: "Mobile", image: "/card3.webp", link: "/portfolio/app-development" },
+      { id: 4, title: "Custom Software", category: "Enterprise", image: "/card4.webp", link: "/portfolio/custom-software" },
     ],
     stackTitle: "Unblock the potential\nof your business\nwith AI Automation",
     sec2Subtitle: "We turn your vision into reality with cutting-edge technology and proven expertise.",
@@ -86,7 +87,7 @@ const translations = {
   },
   ar: {
     logoPart1: "ALHAL", logoPart2: "TECH",
-    navServices: "خدماتنا", navWhy: "لماذا نحن", navPortfolio: "أعمالنا", navContact: "تواصل معنا",
+    navServices: "خدماتنا", navWhy: "لماذا نحن", navPortfolio: "أعمالنا", navAbout: "من نحن", navContact: "تواصل معنا",
     heroBadge: "نستقبل مشاريع جديدة",
     heroTitlePart1: "حلول ذكية،", heroTitlePart2: "نتائج حقيقية",
     heroSubtitle: "تطبيقات، ذكاء اصطناعي، وأتمتة — كل ما يحتاجه عملك للنجاح في العصر الرقمي.",
@@ -107,7 +108,7 @@ const translations = {
     testimonialsLabel: "آراء العملاء", testimonialsTitle: "ماذا يقول عملاؤنا",
     finalCtaTitle: "جاهز لاكتساح السوق؟", finalCtaSubtitle: "دعنا نبني التكنولوجيا التي تميزك. حدد موعدًا لاستشارتك المجانية اليوم.", finalCtaButton: "أطلق مشروعك",
     contactLabel: "تواصل معنا",
-    footerDesc: "هندسة المستقبل الرقمي من السليمانية إلى العالم.", footerServices: "الخدمات", footerCompany: "الشركة", footerSocial: "تواصل",
+    footerServices: "الخدمات", footerCompany: "الشركة", footerSocial: "تواصل",
     footerWebDev: "تطوير الويب", footerMobile: "تطبيقات الجوال", footerAutomation: "الأتمتة", footerAI: "حلول الذكاء الاصطناعي",
     footerAbout: "من نحن", footerServicesLink: "الخدمات", footerCareers: "الوظائف", footerContact: "تواصل معنا",
     footerCopyright: "© 2025 الحل التقني. جميع الحقوق محفوظة.", footerPrivacy: "سياسة الخصوصية", footerTerms: "شروط الاستخدام",
@@ -128,12 +129,12 @@ const translations = {
     workLatest: "أحدث الأعمال",
     workExplore: "استكشف",
     workItems: [
-      { id: 1, title: "حلول الأتمتة", category: "ذكاء اصطناعي", image: "/card1.svg", link: "/portfolio/automation" },
-      { id: 2, title: "تصميم الويب", category: "تطوير", image: "/card2.svg", link: "/portfolio/web-design" },
-      { id: 3, title: "تطوير التطبيقات", category: "جوال", image: "/card3.svg", link: "/portfolio/app-development" },
-      { id: 4, title: "برمجيات مخصصة", category: "مؤسسات", image: "/card4.svg", link: "/portfolio/custom-software" },
+      { id: 1, title: "حلول الأتمتة", category: "ذكاء اصطناعي", image: "/card1.webp", link: "/portfolio/automation" },
+      { id: 2, title: "تصميم الويب", category: "تطوير", image: "/card2.webp", link: "/portfolio/web-design" },
+      { id: 3, title: "تطوير التطبيقات", category: "جوال", image: "/card3.webp", link: "/portfolio/app-development" },
+      { id: 4, title: "برمجيات مخصصة", category: "مؤسسات", image: "/card4.webp", link: "/portfolio/custom-software" },
     ],
-    stackTitle: "أطلق العنان\nلإمكانيات عملك\nمع أتمتة الذكاء الاصطناعي",
+    stackTitle: "نحول أفكارك\nإلى واقع رقمي",
     sec2Subtitle: "نحول رؤيتك إلى واقع بتقنيات حديثة وخبرة مثبتة.",
     sec2Badge1: "السرعة والابتكار", sec2Heading1: "أطلق أسرع، توسع بذكاء",
     sec2Desc1: "عمليتنا المرنة تحول الأسابيع إلى أيام. نبني منتجات أولية تثبت فكرتك بسرعة، ثم نتوسع بهندسة مؤسسية مع نموك.",
@@ -174,6 +175,8 @@ function RevealOnScroll({ children, delay = 0, className = "" }: { children: Rea
 }
 
 export default function App() {
+  usePageMeta({ title: 'ALHAL.TECH | Smart Solutions, Real Results', description: 'شركة عراقية لخدمات المواقع الإلكترونية والأتمتة وخدمات الذكاء الاصطناعي. | An Iraqi company for web design, automation, and AI services.', canonical: 'https://alhaltech.com/' })
+
   const [lang, setLang] = useState<Lang>(() => {
     // Read saved language from localStorage, default to 'ar' (Arabic)
     const savedLang = localStorage.getItem('alhaltech-lang');
@@ -246,72 +249,61 @@ export default function App() {
           </div>
 
           {/* Expertise Section */}
-          <ExpertiseSection translations={t} />
+          <section id="services"><ExpertiseSection translations={t} /></section>
 
-          <section id="services" className="py-12 bg-[#1a1a1a]">
+          <section id="portfolio" className="py-12 bg-[#1a1a1a]">
             <SelectedWork translations={t} />
           </section>
 
-          {/* StackCards Section */}
-          <section className="pt-12 md:pt-16 pb-[20vh] bg-[#1a1a1a] text-[#e8e4df] px-4 md:px-12 lg:px-20">
-            <div className="max-w-[1400px] mx-auto mb-12 md:mb-16">
+          {/* Simple Cards Section */}
+          <section id="why-us" className="py-16 md:py-24 bg-[#1a1a1a] text-[#e8e4df] px-4 md:px-12 lg:px-20">
+            <div className="max-w-[1400px] mx-auto">
               <AnimatedText
                 text={t.stackTitle}
-                className="font-['Anton',sans-serif] text-[32px] sm:text-[52px] md:text-[68px] lg:text-[84px] font-normal leading-[1em] tracking-[0em] uppercase text-[#e8e4df] text-center"
+                className="font-['Anton',sans-serif] text-[32px] sm:text-[52px] md:text-[68px] lg:text-[84px] font-normal leading-[1em] tracking-[0em] uppercase text-[#e8e4df] text-center mb-12 md:mb-16"
                 staggerDelay={35}
                 duration={750}
               />
-            </div>
-            <StackCards>
-              <StackCard
-                className="bg-[#2d2d2d] text-[#e8e4df] p-6"
-              >
-                <div className="flex flex-col items-center gap-6 text-center">
 
-                  <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+              {/* Simple Card Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div className="group bg-[#2d2d2d] rounded-2xl overflow-hidden border border-white/5 hover:border-white/15 transition-all duration-300">
+                  <div className="aspect-[4/3] overflow-hidden">
                     <img
-                      src="/3.svg"
+                      src="/3.webp"
                       loading="lazy"
                       decoding="async"
                       alt="Strategic Planning"
-                      className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                 </div>
-              </StackCard>
 
-              <StackCard
-                className="bg-[#2d2d2d] text-[#e8e4df] p-6"
-              >
-                <div className="flex flex-col items-center gap-6 text-center">
-                  <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                <div className="group bg-[#2d2d2d] rounded-2xl overflow-hidden border border-white/5 hover:border-white/15 transition-all duration-300">
+                  <div className="aspect-[4/3] overflow-hidden">
                     <img
-                      src="/4.svg"
+                      src="/4.webp"
                       loading="lazy"
                       decoding="async"
                       alt="AI Implementation"
-                      className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                 </div>
-              </StackCard>
 
-              <StackCard
-                className="bg-[#2d2d2d] text-[#e8e4df] p-6"
-              >
-                <div className="flex flex-col items-center gap-6 text-center">
-                  <div className="w-full max-h-[800px] aspect-[1400/924] overflow-hidden rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+                <div className="group bg-[#2d2d2d] rounded-2xl overflow-hidden border border-white/5 hover:border-white/15 transition-all duration-300">
+                  <div className="aspect-[4/3] overflow-hidden">
                     <img
-                      src="/5.svg"
+                      src="/5.webp"
                       loading="lazy"
                       decoding="async"
                       alt="Growth Analytics"
-                      className="w-full h-auto object-cover object-top transform group-hover:scale-[1.02] transition-transform duration-500"
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                 </div>
-              </StackCard>
-            </StackCards>
+              </div>
+            </div>
           </section>
 
           {/* Wave Divider */}
